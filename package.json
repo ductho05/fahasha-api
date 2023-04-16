@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.3",
+    "nodemodule": "^0.3.0"
+  },
+  "name": "bookstoreapi",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "devDependencies": {
+    "morgan": "^1.10.0",
+    "mssql": "^9.1.1",
+    "nodemon": "^2.0.22"
+  },
+  "scripts": {
+    "start": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "book",
+    "store",
+    "api"
+  ],
+  "author": "duc tho",
+  "license": "ISC",
+  "description": ""
+}
