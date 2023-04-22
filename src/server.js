@@ -8,7 +8,11 @@ const db = require("./config/db/DbConnection")
 
 // Kết nối database
 db.connect()
+//var indexRouter = require("./routers/index");
+var bookRouter = require("./routers/book");
 
+//app.use('/', indexRouter)
+app.use('/book', bookRouter)
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 app.use(cors())
