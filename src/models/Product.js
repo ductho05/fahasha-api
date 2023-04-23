@@ -11,6 +11,7 @@ const Product = new Schema({
     sold: Number,
     category: String,
     pages: Number,
+    images: String,
     orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"}
 })
 
