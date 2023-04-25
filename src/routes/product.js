@@ -17,5 +17,7 @@ router.post("/update/:id", productController.updateProduct)
 router.get("/delete/:id", productController.deleteProduct)
 
 
+router.post("/", productController.getAllProduct)
+router.get("/:id", productController.getProductById)
 
 module.exports = router
