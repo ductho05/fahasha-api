@@ -137,9 +137,9 @@ class UserController {
     async insertUser(req, res) {
         try {
             const user = new User({...req.body})
-            if (user.name.trim() == "") {
+            if (user.userName.trim() == "" || user.passWord.trim() == "" || user.fullName.trim() == "" || user.email.trim() == "" || user.birth.trim() == ""){
 
-            resObj.status = "Failed"
+            resObj.status = "Failed" 
             resObj.message = "Records is null"
             resObj.data = ""
 
