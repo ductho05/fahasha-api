@@ -17,18 +17,8 @@ const Product = new Schema({
   images: { type: String }, // Đường dẫn ảnh
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
   orderItem: { type: mongoose.Schema.Types.ObjectId, ref: "OrderItem" },
+}, {
+  timestamps: true
 });
-    title: String,
-    author: String,
-    published_date: String,
-    publisher: String,
-    price: Number,
-    isbn: String,
-    sold: Number,
-    category: String,
-    pages: Number,
-    images: String,
-    orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"}
-})
-
+    
 module.exports = mongoose.model("Product", Product);

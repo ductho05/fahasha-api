@@ -1,3 +1,4 @@
+const Category = require("../models/Category");
 const Product = require("../models/Product");
 const responeObject = require("../models/responeObject");
 
@@ -283,10 +284,11 @@ class ProductControllers {
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
-      //   var product = new Product(req.body);
-      //   const data = await product.save();
-      const data = await Product.create(req.body);
+      const data = req.body
+      
       if (data) {
+        data.images = req.file.path
+        await Product.create(data);
         resObj.status = "OK";
         resObj.message = "Add product successfully";
         resObj.data = data;
@@ -308,31 +310,22 @@ class ProductControllers {
   // Sửa dữ liệu sách theo id
   async updateProduct(req, res) {
     try {
-      const data = await Product.updateMany(
-        { _id: req.params.id },
-        {
-          $set: {
-            title: req.body.title,
-            author: req.body.author,
-            published_date: req.body.published_date,
-            price: req.body.price,
-            isbn: req.body.isbn,
-            publisher: req.body.publisher,
-            pages: req.body.pages,
-          },
-        }
-      );
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Update product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Update product failed";
-        resObj.data = {};
-        return res.json(resObj);
+      const id = req.params.id
+      const newProduct = {...req.body}
+      const filter = {_id: id}
+
+      const file = req.file
+      if (file) {
+        newProduct.images = file.path
       }
+      const update = newProduct
+      const options = {new: true}
+
+      await Product.findByIdAndUpdate(filter, update, options).exec()
+      resObj.status = "OK";
+      resObj.message = "Update product successfully";
+      resObj.data = newProduct;
+      return res.json(resObj);
     } catch (err) {
       resObj.status = "Failed";
       resObj.message = `Error update data. Error: ${err}`;
@@ -364,75 +357,4 @@ class ProductControllers {
     }
   }
 }
-
-module.exports = new ProductControllers();
-=======
-const Product = require("../models/Product")
-const responeObject = require("../models/responeObject")
-
-const resObj = new responeObject("", "", {})
-
-class ProductControllers {
-
-    // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
-    async getAllProduct(req, res) {
-        // Số trang
-        var page = parseInt(req.query.page) || 1;
-        // Số sản phẩm trên 1 trang
-        var perPage = parseInt(req.query.perPage) || 10;
-        // Tính số sản phẩm bỏ qua
-        var start = (page - 1) * perPage;
-        // Tính số sản phẩm lấy ra
-        var end = perPage;
-        // Sắp xếp giảm dần theo giá
-        var sort = req.query.sort;
-       
-        try {
-            const data = await Product
-            .find()
-            .sort({price: sort})
-            .skip(start)
-            .limit(end);
-            if (data) {
-                resObj.status = "OK"
-                resObj.message = "Found product successfully"
-                resObj.data = data
-                res.json(resObj)
-            } else {
-                resObj.status = "Failed"
-                resObj.message = "Not found data"
-                resObj.data = ""
-                res.json(resObj)
-            }
-        } catch (err) {
-            resObj.status = "Failed"
-            resObj.message = "Error when get data"
-            resObj.data = ""
-            res.json(resObj)
-        }
-    }
-
-    async getProductById(req, res) {
-        try {
-            const data = await bookModel.findById(req.params.id);
-            if (data) {
-                resObj.status = "OK"
-                resObj.message = "Get product successfully"
-                resObj.data = data
-                return res.json(resObj);
-            } else {
-                resObj.status = "Failed"
-                resObj.message = "Not found product"
-                resObj.data = {}
-                return res.json(resObj);
-            }
-        } catch (err) {
-            resObj.status = "Failed"
-            resObj.message = `Error get data. Error: ${err}`
-            resObj.data = {}
-            return res.json(resObj);
-        }
-    }
-}
-
 module.exports = new ProductControllers
