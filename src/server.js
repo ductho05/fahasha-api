@@ -25,3 +25,5 @@ var port = 3000
 app.listen(port, () => {
     console.log(`App listening port http://127.0.0.1:${port}`)
 })
+
+module.exports = port

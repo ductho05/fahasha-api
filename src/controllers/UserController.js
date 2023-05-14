@@ -137,9 +137,10 @@ class UserController {
     async insertUser(req, res) {
         try {
             const user = new User({...req.body})
-            if (user.name.trim() == "") {
+            console.log(user)
+            if (user.username.trim() == "" || user.password.trim() == "" || user.email.trim() == ""){
 
-            resObj.status = "Failed"
+            resObj.status = "Failed" 
             resObj.message = "Records is null"
             resObj.data = ""
 
@@ -201,6 +202,10 @@ class UserController {
             const id = req.params.id
             const newUser = {...req.body}
             const filter = {_id: id}
+            const file = req.file
+            if (file) {
+                newUser.images = file.path
+            }
             const update = newUser
             const options = {new: true}
             await User.findByIdAndUpdate(filter, update, options).exec()
