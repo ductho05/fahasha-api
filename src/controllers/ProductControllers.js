@@ -124,7 +124,7 @@ class ProductControllers {
       }
 
       // Lấy num sản phẩm thôi
-      if (num) {
+      if (num > 0) {
         data.splice(num);
       }      
 
