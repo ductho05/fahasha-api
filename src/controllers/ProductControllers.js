@@ -406,7 +406,7 @@ resObj.message = "Not found product";
     try {
       var limit = req.query.limit || 0
       var id = req.query.category;
-      const data = await Product.find({categoryId: id}).limit(limit).populate("category").exec();
+      const data = await Product.find({categoryId: id}).limit(limit).populate("categoryId").exec();
         if (data) {
           resObj.status = "OK";
           resObj.message = "Get product successfully";

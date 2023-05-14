@@ -1,11 +1,46 @@
-const CartItem=require('../models/CartItem')
+const Cart = require('../models/Cart')
+const CartItem = require('../models/CartItem')
 const responeObject = require("../models/responeObject")
 
 var resObj = new responeObject("", "", {})
 class CartItemControllers {
+
+    async getCartItemByProduct (req, res) {
+        try {
+            const product = req.query.product
+            const cartItem = await CartItem.findOne({product: product}).populate({
+                path: "product",
+                populate: {
+                    path: "categoryId",
+                    model: "Category"
+                }
+            }).populate("cart").exec()
+            
+            resObj.status = "OK",
+            resObj.message = "Found cartItem successfully !"
+            resObj.data = cartItem
+            res.status(200)
+            res.json(resObj)
+        } catch (error) {
+            resObj.status = "Failed"
+            resObj.message = error.message
+            resObj.data = ""
+            res.status(500)
+            res.json(resObj)
+        }
+    }
+
     async getAllCartItems (req, res) {
         try {
-            const cartItemList = await CartItem.find().populate("product").exec()
+            const id = req.query.id
+            const cart = await Cart.findOne({user: id}).exec()
+            const cartItemList = await CartItem.find({cart: cart._id}).populate({
+                path: "product",
+                populate: {
+                    path: "categoryId",
+                    model: "Category",
+                },
+            }).populate("cart").exec()
             
             resObj.status = "OK",
             resObj.message = "Found cartItem successfully !"
@@ -51,7 +86,7 @@ class CartItemControllers {
     }
     async removeCartItem (req, res) {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
             const cartItem = await CartItem.findByIdAndRemove({_id: id}).exec()
             
             if (cartItem) {
@@ -89,7 +124,7 @@ class CartItemControllers {
 
             resObj.status = "OK"
             resObj.message = "Update successfully"
-            resObj.data = newCartItem
+            resObj.data = ""
 
             res.status(200)
             res.json(resObj)

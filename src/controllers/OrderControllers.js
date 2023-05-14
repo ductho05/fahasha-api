@@ -113,7 +113,7 @@ class OrderController {
     // Lấy tất cả các đơn hàng
     async getAllOrders (req, res) {
         try {
-            const orderList = await Order.find().sort({updatedAt: -1}).exec()
+            const orderList = await Order.find().populate("user").sort({updatedAt: -1}).exec()
             
             resObj.status = "OK",
             resObj.message = "Found order successfully !"
