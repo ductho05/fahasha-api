@@ -69,11 +69,13 @@ class ProductControllers {
         }
         if (filter == "published_date") {
           data.sort(function (a, b) {
+            let dateA = new Date(a.published_date);
+            let dateB = new Date(b.published_date);
             if (sort == "asc") {
-              return a.published_date - b.published_date;
+              return dateA - dateB;
             }
             if (sort == "desc") {
-              return b.published_date - a.published_date;
+              return dateB - dateA;
             }
           });
         }
@@ -108,7 +110,7 @@ class ProductControllers {
           });
         }
         if (filter == "discount") {
-data.sort(function (a, b) {
+            data.sort(function (a, b) {
             let discountA = a.old_price / a.price;
             let discountB = b.old_price / b.price;
             if (sort == "asc") {
