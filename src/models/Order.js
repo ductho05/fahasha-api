@@ -9,9 +9,9 @@ const Order = new Schema ({
     quantity: { type: Number, default: 1 },
     price: { type: Number, require: true },
     message: { type: String, maxLength: 1000},
-    status: { type: String, default: 'Đang chờ xác nhận', maxLength: 100},
+    status: { type: String, default: 'CHOXACNHAN', maxLength: 100},
     pid: { type: Boolean, default: false},
-    orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"},
+    //orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"},
     user: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
 
 }, {
