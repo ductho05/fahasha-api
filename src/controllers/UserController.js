@@ -133,6 +133,37 @@ class UserController {
         }
     }
 
+    // Lấy danh sách User theo email
+    async getUserByEmail(req, res) {
+        try {
+            var email = req.query.email
+            const user = await User.findOne({'email':email}).exec()
+            
+            if (user) {
+                resObj.status = "OK"
+                resObj.message = "Found user successfully"
+                resObj.data = user
+
+                res.status(200)
+                res.json(resObj)
+            } else {
+                resObj.status = "OK"
+                resObj.message = "Not found user"
+                resObj.data = {}
+
+                res.status(404)
+                res.json(resObj)
+            }
+        } catch (error) {
+            resObj.status = "Failed"
+            resObj.message = error.message
+            resObj.data = ""
+
+            res.status(500)
+            res.json(resObj)
+        }
+    }
+
     // Thêm User 
     async insertUser(req, res) {
         try {

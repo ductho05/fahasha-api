@@ -111,29 +111,46 @@ class OrderController {
     }
 
     // Lấy tất cả các đơn hàng
-    async getAllOrders (req, res) {
+    async getAllOrders(req, res) {
+        var page = req.query.page;
+        var limit = req.query.limit;
+        var status = req.query.status;
+        var name = req.query.name;
+        var firstTime = req.query.ftime;
+        var lastTime = req.query.ltime;
+        var sort = req.query.sort;
+        var user = req.query.user;
         try {
-            const orderList = await Order.find().populate("user").sort({updatedAt: -1}).exec()
-            
-            resObj.status = "OK",
-            resObj.message = "Found order successfully !"
-            resObj.data = orderList
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
+          const data = await Order.find(
+            status ? { status: new RegExp(status, "i") } : {}
+          )
+            .find(user ? { user: user } : {})
+            .sort(sort ? { updatedAt: sort } : {}).populate("user").exec();
+    
+          if (data) {
+            resObj.status = "OK";
+            resObj.message = "Found product successfully";
+            resObj.data = data;
+            res.json(resObj);
+          } else {
+            resObj.status = "Failed";
+            resObj.message = "Not found data";
+            resObj.data = "";
+            res.json(resObj);
+          }
+        } catch (err) {
+          resObj.status = "Failed";
+          resObj.message = "Error when get data" + err;
+          resObj.data = "";
+          res.json(resObj);
         }
-    }
+      }
 
     // Lấy 1 đơn hàng theo id
     async getOrderById (req, res) {
         try {
             var id = req.params.id
-            const order = await Order.findOne({'_id':id}).exec()
+            const order = await Order.findOne({'_id':id}).populate("user").exec()
             
             if (order) {
                 resObj.status = "OK"
