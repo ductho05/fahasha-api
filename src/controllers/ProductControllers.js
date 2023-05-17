@@ -1,3 +1,4 @@
+const { Int, Float } = require("mssql");
 const Product = require("../models/Product");
 const responeObject = require("../models/responeObject");
 
@@ -6,7 +7,6 @@ const resObj = new responeObject("", "", {});
 class ProductControllers {
   // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
   async getAllProduct(req, res) {
-    
     // Category
     var category = req.query.category;
 
@@ -32,14 +32,15 @@ class ProductControllers {
     var num = req.query.num;
 
     try {
-      
-      const data = await Product.find(category ? { categoryId: category } : {}).find(
-        title ? { title: new RegExp(title, "i")} : {}
-      ).populate("categoryId").skip(start).limit(end).exec();
+      const data = await Product.find(category ? { categoryId: category } : {})
+        .find(title ? { title: new RegExp(title, "i") } : {})
+        .populate("categoryId")
+        .skip(start)
+        .limit(end)
+        .exec();
       if (sort) {
         if (filter == "price") {
           data.sort(function (a, b) {
-            
             if (sort == "asc") {
               return a.price - b.price;
             }
@@ -111,7 +112,7 @@ class ProductControllers {
           });
         }
         if (filter == "discount") {
-            data.sort(function (a, b) {
+          data.sort(function (a, b) {
             let discountA = a.old_price / a.price;
             let discountB = b.old_price / b.price;
             if (sort == "asc") {
@@ -127,7 +128,7 @@ class ProductControllers {
       // Lấy num sản phẩm thôi
       if (num > 0) {
         data.splice(num);
-      }      
+      }
 
       if (data) {
         resObj.status = "OK";
@@ -154,6 +155,72 @@ class ProductControllers {
       const data = await Product.findById(req.params.id)
         .populate("categoryId")
         .exec();
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
+    }
+  }
+
+  // Tìm 5 category co nhiều sản phẩm nhất
+  async getNumProductByCategory(req, res) {
+    try {
+      const data = await Product.aggregate([
+        {
+          $group: {
+            _id: "$categoryId",
+            
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+        { $limit: 5 },
+      ]);
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
+    }
+  }
+
+
+  // Tìm tổng số sản phẩm có rate bằng 5
+  async getNumProductByRate(req, res) {
+    try {
+      const data = await Product.aggregate([
+        {
+          $group: {
+            _id: "$rate",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: -1 } },    
+      ]);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Get product successfully";
@@ -220,7 +287,7 @@ class ProductControllers {
         return res.json(resObj);
       }
     } catch (err) {
-resObj.status = "Failed";
+      resObj.status = "Failed";
       resObj.message = `Error get data. Error: ${err}`;
       resObj.data = {};
       return res.json(resObj);
@@ -330,7 +397,7 @@ resObj.status = "Failed";
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
-resObj.message = "Not found product";
+        resObj.message = "Not found product";
         resObj.data = {};
         return res.json(resObj);
       }
@@ -405,21 +472,23 @@ resObj.message = "Not found product";
   // Lấy sách theo danh mục
   async getProductByCategory(req, res) {
     try {
-      var limit = req.query.limit || 0
+      var limit = req.query.limit || 0;
       var id = req.query.category;
-      const data = await Product.find({categoryId: id}).limit(limit).populate("categoryId").exec();
-        if (data) {
-          resObj.status = "OK";
-          resObj.message = "Get product successfully";
-          resObj.data = data;
-          return res.json(resObj);
-        } else {
-          resObj.status = "Failed";
-          resObj.message = "Not found product";
-          resObj.data = {};
-          return res.json(resObj);
-        }
-      
+      const data = await Product.find({ categoryId: id })
+        .limit(limit)
+        .populate("categoryId")
+        .exec();
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
     } catch (err) {
       resObj.status = "Failed";
       resObj.message = `Error get data. Error: ${err}`;
@@ -433,7 +502,7 @@ resObj.message = "Not found product";
     try {
       //   var product = new Product(req.body);
       //   const data = await product.save();
-const data = await Product.create(req.body).populate("categoryId");
+      const data = await Product.create(req.body).populate("categoryId");
       if (data) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";

@@ -4,7 +4,7 @@ const productController = require("../controllers/ProductControllers")
 const upload = require("../config/cloudinary")
 
 router.get("/", productController.getAllProduct)
-router.get("/:id", productController.getProductById)
+router.get("/id/:id", productController.getProductById)
 router.get("/title/:title", productController.getProductByName)
 router.get("/author/:author", productController.getProductByAuthor)
 router.get("/published_date/:start/:end", productController.getProductByYear)
@@ -16,7 +16,7 @@ router.get("/price/:start/:end/:sort", productController.getProductByPrice)
 router.post("/add", upload.single('images'), productController.addProduct)
 router.put("/update/:id", upload.single('images'), productController.updateProduct)
 router.get("/delete/:id", productController.deleteProduct)
-
-
+router.get("/maxcategory", productController.getNumProductByCategory)
+router.get("/rate", productController.getNumProductByRate)
 
 module.exports = router

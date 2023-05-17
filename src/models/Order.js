@@ -11,7 +11,11 @@ const Order = new Schema ({
     message: { type: String, maxLength: 1000},
     status: { type: String, default: 'CHOXACNHAN', maxLength: 100},
     pid: { type: Boolean, default: false},
-    //orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"},
+    payment_method: {type: String},
+    shipping_method: {type: String}, 
+    deliveryDate: {type: String},
+    shippingCost: {type: String},
+    orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"},
     user: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
 
 }, {

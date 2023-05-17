@@ -7,5 +7,6 @@ router.get("/:id", orderItemController.getOrderItemById)
 router.post("/insert", orderItemController.insertOrderItem)
 router.delete("/delete/:id", orderItemController.removeOrderItem)
 router.put("/update/:id", orderItemController.updateOrderItem)
+router.post("/order", orderItemController.getAllOrderItemByOrder)
 
 module.exports = router
