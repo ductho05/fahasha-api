@@ -16,6 +16,7 @@ const Order = new Schema ({
     deliveryDate: {type: String},
     shippingCost: {type: String},
     orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"},
+    //orderItem: {type: mongoose.Schema.Types.ObjectId, ref: "OrderItem"},
     user: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
 
 }, {

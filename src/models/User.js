@@ -15,6 +15,7 @@ const User = new Schema ({
     birth: { type: Date, default: null},
     order: { type: mongoose.Schema.Types.ObjectId, ref: "Order"},
     cart: {type: mongoose.Schema.Types.ObjectId, ref: "Cart"}
+    
 },{
     timestamps: true
 })

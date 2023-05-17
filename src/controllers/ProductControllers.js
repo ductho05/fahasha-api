@@ -10,6 +10,9 @@ class ProductControllers {
     // Category
     var category = req.query.category;
 
+    // Tên sách
+    var title = req.query.title;
+
     // Số trang
     var page = parseInt(req.query.page);
     // Số sản phẩm trên 1 trang
@@ -30,11 +33,9 @@ class ProductControllers {
 
     try {
       
-      const data = await Product.find(category ? { categoryId: category } : {})
-        .populate("categoryId")
-        .skip(start)
-        .limit(end)
-        .exec();
+      const data = await Product.find(category ? { categoryId: category } : {}).find(
+        title ? { title: new RegExp(title, "i")} : {}
+      ).populate("categoryId").skip(start).limit(end).exec();
       if (sort) {
         if (filter == "price") {
           data.sort(function (a, b) {
