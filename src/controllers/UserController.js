@@ -1,7 +1,7 @@
 const User = require('../models/User')
 const responeObject = require('../models/responeObject')
 const { ConnectionStates } = require('mongoose')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const constants = require('../constants/index.js')
 const nodemailer = require('nodemailer')
