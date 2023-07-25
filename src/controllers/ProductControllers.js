@@ -584,13 +584,7 @@ class ProductControllers {
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
-      //   var product = new Product(req.body);
-      //   const data = await product.save();
-<<<<<<< HEAD
-const data = await Product.create(req.body);
-=======
       const data = await Product.create(req.body).populate("categoryId");
->>>>>>> cc7d49ed3f7fe14247c495dfc579f3c75ad8296a
       if (data) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";
