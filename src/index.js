@@ -20,8 +20,7 @@ app.use(cors())
 route(app)
 
 // Khai báo port
-console.log(process.env.PORT)
-var port = process.env.PORT || 3000
+var port = 3000
 
 app.listen(port, () => {
     console.log(`App listening port http://127.0.0.1:${port}`)
