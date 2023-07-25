@@ -6,16 +6,15 @@ const User = new Schema ({
     username: { type: String, require: true},
     password: { type: String, require: true},
     fullName: { type: String, default: ""},
-    images: { type: String, default: ""},
+    images: { type: String, default: "https://www.iconpacks.net/icons/1/free-user-icon-972-thumb.png"},
     gender: { type: String, default: ""},
     email: { type: String, require: true},
     address: { type: String, default: ""},
     city: { type: String, default: ""},
     phoneNumber: { type: String, default: ""},
-    birth: { type: Date, default: null},
+    birth: { type: String, default: ""},
     order: { type: mongoose.Schema.Types.ObjectId, ref: "Order"},
     cart: {type: mongoose.Schema.Types.ObjectId, ref: "Cart"}
-    
 },{
     timestamps: true
 })

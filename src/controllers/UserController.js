@@ -1,9 +1,177 @@
 const User = require('../models/User')
 const responeObject = require('../models/responeObject')
+const { ConnectionStates } = require('mongoose')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const constants = require('../constants/index.js')
+const nodemailer = require('nodemailer')
 
 var resObj = new responeObject('','', {})
 
 class UserController {
+
+    async SendEmail(req, res) {
+        try {
+            const {email} = req.body
+            const otp = Math.floor(1000 + Math.random() * 1000000)
+            console.log(email)
+            
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: 'fahashashopclone@gmail.com',
+                    pass: 'woycibkntohskmnz'
+                }
+            })
+
+            const mainOptions = {
+                from: 'fahashashopclone@gmail.com',
+                to: email,
+                subject: 'Mã xác thực OTP',
+                html: `<div>Mã xác thực OTP <p style='font-size: 16px; color: red'; font-weight: 500;>${otp}</p></div>`
+            }
+
+            transporter.sendMail(mainOptions, (err, info) => {
+                if (err) {
+                    resObj.status = "Failure"
+                    resObj.message = err
+                    resObj.data = ''
+                    res.json(resObj)
+                } else {
+                    resObj.status = "OK"
+                    resObj.message = "Send email successfully"
+                    resObj.data = otp
+                    res.json(resObj)
+                }
+            })
+
+        } catch (err) {
+            resObj.status = "Failure"
+            resObj.message = err.message
+            resObj.data = ''
+            res.json(resObj)
+        }
+    }
+
+    async getUserByToken(req, res) {
+        try {
+            const {token} = req.body
+            if (!token) {
+                resObj.status = "Failure"
+                resObj.message = 'token is valid'
+                resObj.data = ''
+                res.json(resObj)
+            } else {
+                const decoded = jwt.verify(token, constants.TOKEN_KEY)
+                console.log(decoded)
+                const user = await User.findOne({_id: decoded.user_id})
+                resObj.status = "OK"
+                resObj.message = "get user successfully"
+                resObj.data = user
+                res.json(resObj)
+            }
+        } catch (err) {
+            resObj.status = "Failure"
+            resObj.message = err.message
+            resObj.data = ''
+            res.json(resObj)
+        }
+    }
+
+    async LoginUser(req,res) {
+        
+        try {
+            const {email, password} = req.body
+            if (!(email && password)) {
+                resObj.status = "Falure"
+                resObj.message = "Invalid Input"
+                resObj.data = {}
+                res.json(resObj)
+            }
+    
+            // Kiểm tra user trong db
+            const user = await User.findOne({email: email})
+            if (user && (await bcrypt.compare(password, user.password))) {
+                // Tạo Token
+                const token = jwt.sign(
+                    { user_id: user._id, email },
+                    constants.TOKEN_KEY,
+                    {
+                    expiresIn: "2h",
+                    }
+                )
+
+                resObj.status = "OK"
+                resObj.message = "Login Succsess"
+                resObj.data = user
+                resObj.token = token
+                res.json(resObj)
+            } else {
+                resObj.status = "OK"
+                resObj.message = "Email Or Password Not Matched"
+                resObj.data = {}
+                res.json(resObj)
+            }
+    
+        } catch(err) {
+            resObj.status = "Falure"
+            resObj.message = err.message
+            resObj.data = {}
+            res.json(resObj)
+        }
+    }
+
+    async RegisterUser(req,res) {
+        
+        try {
+            const {email, password} = req.body
+            if (!(email && password)) {
+                resObj.status = "Falure"
+                resObj.message = "Invalid Input"
+                resObj.data = {}
+                res.json(resObj)
+            }
+    
+            // Kiểm tra xem đã tồn tại user chưa?
+            const oldUser = await User.findOne({'email':email})
+            if (oldUser) {
+                resObj.status = "Falure"
+                resObj.message = "User is already"
+                resObj.data = {}
+                res.json(resObj)
+            }
+    
+            // Tiến hành mã hóa mật khẩu
+            const encryptedPassword = await bcrypt.hash(password, 10);
+            const user =  new User({
+                email: email.toLowerCase(),
+                password: encryptedPassword
+            })
+    
+            // Tạo Token
+            const token = jwt.sign(
+                { user_id: user._id, email },
+                constants.TOKEN_KEY,
+                {
+                expiresIn: "2h",
+                }
+            )
+
+            user.save()
+            resObj.status = "OK"
+            resObj.message = "Register Succsess"
+            resObj.data = user
+            resObj.token = token
+            res.json(resObj)
+        } catch(err) {
+            resObj.status = "Falure"
+            resObj.message = err.message
+            resObj.data = {}
+            res.json(resObj)
+        }
+    }
 
     // Lấy danh sách User theo phân trang
     async getAllUserPagination (req, res) {
@@ -236,6 +404,11 @@ class UserController {
             const file = req.file
             if (file) {
                 newUser.images = file.path
+            }
+            if (newUser.password) {
+                console.log('new password')
+                const encryptedPassword = await bcrypt.hash(newUser.password, 10);
+                newUser.password = encryptedPassword
             }
             const update = newUser
             const options = {new: true}

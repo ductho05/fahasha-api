@@ -28,7 +28,7 @@ class OrderItemController {
 
     async getAllOrderItemByOrder (req, res) {
         try {
-            const id = req.query.id
+            const id  = req.query.id
             const orderItemList = await OrderItem.find({order: id})
             .populate("order")
             .populate({
@@ -39,10 +39,42 @@ class OrderItemController {
                 }
             })
             .exec()
-            
+
             resObj.status = "OK",
             resObj.message = "Found order successfully !"
             resObj.data = orderItemList
+            res.status(200)
+            res.json(resObj)
+        } catch (error) {
+            resObj.status = "Failed"
+            resObj.message = error.message
+            resObj.data = ""
+            res.status(500)
+            res.json(resObj)
+        }
+    }
+
+    async getAllOrderItemByOrderStatus (req, res) {
+        try {
+            const status  = req.query.status
+            const status_order  = req.query.status_order
+            const user = req.query.user
+            const orderItemList = await OrderItem.find({status: status})
+            .populate("order")
+            .populate({
+                path: "product",
+                populate: {
+                    path: "categoryId",
+                    model: "Category"
+                }
+            })
+            .exec()
+            
+            const newData = orderItemList.filter((orderItem) => orderItem.order.status == status_order && orderItem.order.user == user )
+
+            resObj.status = "OK",
+            resObj.message = "Found order successfully !"
+            resObj.data = newData
             res.status(200)
             res.json(resObj)
         } catch (error) {

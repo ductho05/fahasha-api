@@ -7,7 +7,32 @@ class CategoryControllers {
   // Lấy tất cả category
   async getAllCategory(req, res) {
     try {
-      const data = await Category.find();
+      const data = await Category.aggregate([
+        {
+          $addFields: {
+            field: {
+              $toObjectId: '$field'
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'fields',
+            localField: 'field',
+            foreignField: '_id',
+            as: 'field'
+          }
+        },
+        {
+          $unwind: '$field'
+        },
+        {
+          $group: {
+            _id: '$field.name',
+            categories: { $push: '$$ROOT' }
+          }
+        }
+      ]);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Found category successfully";

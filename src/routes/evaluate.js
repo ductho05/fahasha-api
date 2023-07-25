@@ -4,6 +4,8 @@ const router = express.Router();
 const evaluateController = require("../controllers/EvaluateController");
 
 router.post("/product", evaluateController.getEvaluateByProductId);
+router.post("/", evaluateController.getEvaluateByUser);
 router.post("/insert", evaluateController.insertEvaluate);
+router.post("/count", evaluateController.getCountEvaluateByProductId);
 
 module.exports = router;

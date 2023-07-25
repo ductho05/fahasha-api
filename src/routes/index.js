@@ -8,6 +8,7 @@ const cartRouter = require("./cart")
 const cartItemRouter = require("./cartItem")
 const evaluateRouter = require("./evaluate")
 const commentRouter = require("./comment")
+const fieldRouter = require("./field")
 
 function route(app) {
     app.use('/bookstore/api/v1/orders', orderRouter)
@@ -20,6 +21,7 @@ function route(app) {
     app.use("/bookstore/api/v1/cartitems", cartItemRouter)
     app.use("/bookstore/api/v1/evaluates", evaluateRouter)
     app.use("/bookstore/api/v1/comments", commentRouter)
+    app.use("/bookstore/api/v1/fields", fieldRouter)
 
 }
 

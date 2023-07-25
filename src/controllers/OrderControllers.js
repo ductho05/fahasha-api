@@ -5,13 +5,14 @@ var resObj = new responeObject("", "", {});
 class OrderController {
   // Lấy đơn hàng theo trạng thái đơn hàng
   async getAllOrderByStatus(req, res) {
-    const page = req.query.page;
-    const limit = req.query.limit;
+    const page = req.query.page | 1;
+    const limit = req.query.limit | 10;
     const status = req.query.status;
+    const user = req.query.user;
 
     try {
       console.log(status);
-      const orderList = await Order.find({ status: new RegExp(status, "i") })
+      const orderList = await Order.find({ user: user, status: new RegExp(status, "i") })
         .sort({ updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit);
@@ -34,9 +35,10 @@ class OrderController {
   async getAllOrderPaginaion(req, res) {
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
-
+    const user = req.query.user
+    
     try {
-      const orderList = await Order.find()
+      const orderList = await Order.find({user: user})
         .sort({ updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit);

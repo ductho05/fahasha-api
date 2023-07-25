@@ -12,5 +12,9 @@ router.post("/search", userController.getAllUserByName)
 router.post("/", userController.getUserByEmail)
 router.post("/filter/time", userController.getAllUserByTime)
 router.post("/", userController.getAllUserPagination)
+router.post("/register", userController.RegisterUser)
+router.post("/login", userController.LoginUser)
+router.post("/sendotp", userController.SendEmail)
+router.post("/profile", userController.getUserByToken)
 
 module.exports = router

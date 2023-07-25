@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
 const responeObject = require("../models/responeObject");
 
 const resObj = new responeObject("", "", {});
@@ -145,6 +146,60 @@ class ProductControllers {
       resObj.message = "Error when get data" + err;
       resObj.data = "";
       res.json(resObj);
+    }
+  }
+
+  // Đếm số lượng sản phẩm theo category
+  async getCountProduct(req, res) {
+    try {
+      var id = req.query.category;
+      let data
+      if (id == '') {
+        data = await Product.count()
+      } else {
+        data = await Product.count({categoryId: id})
+      }
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Count product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
+    }
+  }
+
+  // Lấy 6 sản phẩm được bán chạy nhất
+  async getProductBestSellerLimit(req, res) {
+    try {
+      const data = await Product.find()
+
+      const newData = data.sort((a, b) => b.sold - a.sold).splice(0, 6)
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = newData;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
     }
   }
 
@@ -312,6 +367,35 @@ resObj.status = "Failed";
     }
   }
 
+  // Lấy sách giảm sốc
+  async getLowestProduct(req, res) {
+    try {
+      var num = parseInt(req.params.num) || 8;
+      const data = await Product.find()
+        .sort({
+          price: -1,
+        })
+        .populate("categoryId")
+        .limit(num);
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
+    }
+  }
+
   // Lấy sách bán chạy nhất
   async getBestSellerProduct(req, res) {
     try {
@@ -376,7 +460,7 @@ resObj.message = "Not found product";
   async getProductByCategoryName(req, res) {
     try {
       const category = await Category.findOne({
-        name: "Sách văn học",
+        name: "Lịch Sử Thế Giới",
       }).populate("categoryId");
 
       const data = await Product.find({
@@ -433,7 +517,7 @@ resObj.message = "Not found product";
     try {
       //   var product = new Product(req.body);
       //   const data = await product.save();
-const data = await Product.create(req.body).populate("categoryId");
+const data = await Product.create(req.body);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";
