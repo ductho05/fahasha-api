@@ -3,12 +3,43 @@ const responeObject = require("../models/responeObject");
 
 var resObj = new responeObject("", "", {});
 class OrderController {
+
+  // Lấy tổng số lượng đơn hàng theo cả 5 trạng thái
+
+  async getTotalOrderByStatus(req, res) {
+    try {
+      const total = await Order.aggregate([
+        {
+          $group: {
+            status: "DAGIAO",            
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+      ]);
+      resObj.status = "OK";
+      resObj.message = "Found orders successfully";
+      resObj.data = total;
+      res.status(200);
+      res.json(resObj);
+    } catch (error) {
+      resObj.status = "Failed";
+      resObj.message = error.message;
+      resObj.data = "";
+      res.status(500);
+      res.json(resObj);
+    }
+  }
+
+
   // Lấy đơn hàng theo trạng thái đơn hàng
   async getAllOrderByStatus(req, res) {
     const page = req.query.page | 1;
     const limit = req.query.limit | 10;
     const status = req.query.status;
     const user = req.query.user;
+
+
 
     try {
       console.log(status);
