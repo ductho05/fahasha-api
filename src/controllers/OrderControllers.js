@@ -199,7 +199,7 @@ class OrderController {
         status ? { status: new RegExp(status, "i") } : {}
       )
         .find(user ? { user: user } : {})
-        .sort(sort ? { updatedAt: sort } : {}).populate("user").exec();
+        .sort(sort ? { updatedAt: sort } : {}).limit(limit).populate("user").exec();
 
       if (data) {
         resObj.status = "OK";
