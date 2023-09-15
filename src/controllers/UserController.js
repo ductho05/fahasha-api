@@ -83,8 +83,8 @@ class UserController {
     // Login with facebook
     async LoginWithFacebook(req, res) {
         try {
-            const { email, username, image } = req.body
-            const findUser = await User.findOne({ email: email, fullName: username }).exec()
+            const { email, username, image, faceId } = req.body
+            const findUser = await User.findOne({ facebookId: faceId }).exec()
             if (findUser) {
                 const token = jwt.sign(
                     { user_id: findUser._id, email },
@@ -104,6 +104,7 @@ class UserController {
                     email: email,
                     fullName: username,
                     images: image,
+                    facebookId: faceId
                 })
 
                 const token = jwt.sign(
