@@ -14,6 +14,7 @@ router.post("/filter/time", userController.getAllUserByTime)
 router.post("/", userController.getAllUserPagination)
 router.post("/register", userController.RegisterUser)
 router.post("/login", userController.LoginUser)
+router.post("/login/facebook", userController.LoginWithFacebook)
 router.post("/sendotp", userController.SendEmail)
 router.post("/profile", userController.getUserByToken)
 

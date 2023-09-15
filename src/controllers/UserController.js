@@ -6,16 +6,16 @@ const jwt = require('jsonwebtoken')
 const constants = require('../constants/index.js')
 const nodemailer = require('nodemailer')
 
-var resObj = new responeObject('','', {})
+var resObj = new responeObject('', '', {})
 
 class UserController {
 
     async SendEmail(req, res) {
         try {
-            const {email} = req.body
+            const { email } = req.body
             const otp = Math.floor(1000 + Math.random() * 1000000)
             console.log(email)
-            
+
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
                 port: 465,
@@ -57,7 +57,7 @@ class UserController {
 
     async getUserByToken(req, res) {
         try {
-            const {token} = req.body
+            const { token } = req.body
             if (!token) {
                 resObj.status = "Failure"
                 resObj.message = 'token is valid'
@@ -66,7 +66,7 @@ class UserController {
             } else {
                 const decoded = jwt.verify(token, constants.TOKEN_KEY)
                 console.log(decoded)
-                const user = await User.findOne({_id: decoded.user_id})
+                const user = await User.findOne({ _id: decoded.user_id })
                 resObj.status = "OK"
                 resObj.message = "get user successfully"
                 resObj.data = user
@@ -80,26 +80,76 @@ class UserController {
         }
     }
 
-    async LoginUser(req,res) {
-        
+    // Login with facebook
+    async LoginWithFacebook(req, res) {
         try {
-            const {email, password} = req.body
+            const { email, username, image } = req.body
+            const findUser = await User.findOne({ email: email, fullName: username }).exec()
+            if (findUser) {
+                const token = jwt.sign(
+                    { user_id: findUser._id, email },
+                    constants.TOKEN_KEY,
+                    {
+                        expiresIn: "2h",
+                    }
+                )
+
+                resObj.status = "OK"
+                resObj.message = "Login Succsess"
+                resObj.data = findUser
+                resObj.token = token
+                res.json(resObj)
+            } else {
+                const user = new User({
+                    email: email,
+                    fullName: username,
+                    images: image,
+                })
+
+                const token = jwt.sign(
+                    { user_id: user._id, email },
+                    constants.TOKEN_KEY,
+                    {
+                        expiresIn: "2h",
+                    }
+                )
+
+                user.save()
+                resObj.status = "OK"
+                resObj.message = "Login Succsess"
+                resObj.data = user
+                resObj.token = token
+                res.json(resObj)
+            }
+
+        } catch (err) {
+            resObj.status = "Falure"
+            resObj.message = err?.message
+            resObj.data = {}
+            res.json(resObj)
+        }
+    }
+
+    async LoginUser(req, res) {
+
+        try {
+            const { email, password } = req.body
             if (!(email && password)) {
                 resObj.status = "Falure"
                 resObj.message = "Invalid Input"
                 resObj.data = {}
                 res.json(resObj)
             }
-    
+
             // Kiểm tra user trong db
-            const user = await User.findOne({email: email})
+            const user = await User.findOne({ email: email })
             if (user && (await bcrypt.compare(password, user.password))) {
                 // Tạo Token
                 const token = jwt.sign(
                     { user_id: user._id, email },
                     constants.TOKEN_KEY,
                     {
-                    expiresIn: "2h",
+                        expiresIn: "2h",
                     }
                 )
 
@@ -114,8 +164,8 @@ class UserController {
                 resObj.data = {}
                 res.json(resObj)
             }
-    
-        } catch(err) {
+
+        } catch (err) {
             resObj.status = "Falure"
             resObj.message = err.message
             resObj.data = {}
@@ -123,39 +173,39 @@ class UserController {
         }
     }
 
-    async RegisterUser(req,res) {
-        
+    async RegisterUser(req, res) {
+
         try {
-            const {email, password} = req.body
+            const { email, password } = req.body
             if (!(email && password)) {
                 resObj.status = "Falure"
                 resObj.message = "Invalid Input"
                 resObj.data = {}
                 res.json(resObj)
             }
-    
+
             // Kiểm tra xem đã tồn tại user chưa?
-            const oldUser = await User.findOne({'email':email})
+            const oldUser = await User.findOne({ 'email': email })
             if (oldUser) {
                 resObj.status = "Falure"
                 resObj.message = "User is already"
                 resObj.data = {}
                 res.json(resObj)
             }
-    
+
             // Tiến hành mã hóa mật khẩu
             const encryptedPassword = await bcrypt.hash(password, 10);
-            const user =  new User({
+            const user = new User({
                 email: email.toLowerCase(),
                 password: encryptedPassword
             })
-    
+
             // Tạo Token
             const token = jwt.sign(
                 { user_id: user._id, email },
                 constants.TOKEN_KEY,
                 {
-                expiresIn: "2h",
+                    expiresIn: "2h",
                 }
             )
 
@@ -165,7 +215,7 @@ class UserController {
             resObj.data = user
             resObj.token = token
             res.json(resObj)
-        } catch(err) {
+        } catch (err) {
             resObj.status = "Falure"
             resObj.message = err.message
             resObj.data = {}
@@ -174,15 +224,15 @@ class UserController {
     }
 
     // Lấy danh sách User theo phân trang
-    async getAllUserPagination (req, res) {
+    async getAllUserPagination(req, res) {
         const page = req.query.page || 1
         const limit = req.query.limit || 10
 
         try {
             const userList = await User.find()
-            .sort({updateAt: -1})
-            .skip((page - 1) * limit)
-            .limit(limit)
+                .sort({ updateAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
             resObj.status = "OK"
             resObj.message = "Found Users by Paging successfully"
             resObj.data = userList
@@ -205,10 +255,10 @@ class UserController {
         const lastTime = req.query.ltime;
 
         try {
-            const userList = await User.find({createAt: {$gte: firstTime, $lte: lastTime}})
-            .sort({updateAt: -1})
-            .skip((page - 1) * limit)
-            .limit(limit)
+            const userList = await User.find({ createAt: { $gte: firstTime, $lte: lastTime } })
+                .sort({ updateAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
 
             resObj.status = "OK"
             resObj.message = "Found Users by time successfully"
@@ -225,17 +275,17 @@ class UserController {
     }
 
     // Lấy danh sách User theo tên
-    async getAllUserByName (req, res) {
+    async getAllUserByName(req, res) {
         const name = req.query.name
         const page = req.query.page
         const limit = req.query.limit
-    
+
         try {
-            const userList = await User.find({$text: {$search: name, $caseSensitive: false, $diacriticSensitive: false}})
-            .sort({updatedAt: -1})
-            .skip((page - 1) * limit)
-            .limit(limit)
-            
+            const userList = await User.find({ $text: { $search: name, $caseSensitive: false, $diacriticSensitive: false } })
+                .sort({ updatedAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+
             resObj.status = "Ok"
             resObj.message = "Found Users by Name successfully"
             resObj.data = userList
@@ -254,10 +304,10 @@ class UserController {
     // Lấy tất cả Users
     async getAllUsers(req, res) {
         try {
-            const userList = await User.find().sort({updatedAt: -1}).exec()
-            
+            const userList = await User.find().sort({ updatedAt: -1 }).exec()
+
             resObj.status = "OK",
-            resObj.message = "Found User successfully !"
+                resObj.message = "Found User successfully !"
             resObj.data = userList
             res.status(200)
             res.json(resObj)
@@ -268,14 +318,14 @@ class UserController {
             res.status(500)
             res.json(resObj)
         }
-    } 
+    }
 
     // Lấy danh sách User theo id
     async getUserById(req, res) {
         try {
             var id = req.params.id
-            const user = await User.findOne({'_id':id}).exec()
-            
+            const user = await User.findOne({ '_id': id }).exec()
+
             if (user) {
                 resObj.status = "OK"
                 resObj.message = "Found user successfully"
@@ -305,8 +355,8 @@ class UserController {
     async getUserByEmail(req, res) {
         try {
             var email = req.query.email
-            const user = await User.findOne({'email':email}).exec()
-            
+            const user = await User.findOne({ 'email': email }).exec()
+
             if (user) {
                 resObj.status = "OK"
                 resObj.message = "Found user successfully"
@@ -335,26 +385,26 @@ class UserController {
     // Thêm User 
     async insertUser(req, res) {
         try {
-            const user = new User({...req.body})
+            const user = new User({ ...req.body })
             console.log(user)
-            if (user.username.trim() == "" || user.password.trim() == "" || user.email.trim() == ""){
+            if (user.username.trim() == "" || user.password.trim() == "" || user.email.trim() == "") {
 
-            resObj.status = "Failed" 
-            resObj.message = "Records is null"
-            resObj.data = ""
+                resObj.status = "Failed"
+                resObj.message = "Records is null"
+                resObj.data = ""
 
-            res.json(resObj)
-            } 
+                res.json(resObj)
+            }
 
             else {
-            resObj.status = "OK"
-            resObj.message = "Insert user successfully"
-            resObj.data = user
+                resObj.status = "OK"
+                resObj.message = "Insert user successfully"
+                resObj.data = user
 
-            user.save()
-            res.json(resObj)
+                user.save()
+                res.json(resObj)
             }
-            
+
         } catch (error) {
             resObj.status = "Failed"
             resObj.message = error.message
@@ -369,14 +419,14 @@ class UserController {
     async removeUser(req, res) {
         try {
             const id = req.params.id;
-            const user = await User.findByIdAndRemove({_id: id}).exec()
-            
+            const user = await User.findByIdAndRemove({ _id: id }).exec()
+
             if (user) {
                 resObj.status = "OK"
                 resObj.message = "Remove user successfully"
                 resObj.data = `user id: ${id}`
                 res.status(200)
-                res.json(resObj) 
+                res.json(resObj)
             } else {
                 resObj.status = "Failed"
                 resObj.message = "Not found user"
@@ -399,8 +449,8 @@ class UserController {
     async updateUser(req, res) {
         try {
             const id = req.params.id
-            const newUser = {...req.body}
-            const filter = {_id: id}
+            const newUser = { ...req.body }
+            const filter = { _id: id }
             const file = req.file
             if (file) {
                 newUser.images = file.path
@@ -411,7 +461,7 @@ class UserController {
                 newUser.password = encryptedPassword
             }
             const update = newUser
-            const options = {new: true}
+            const options = { new: true }
             await User.findByIdAndUpdate(filter, update, options).exec()
 
             resObj.status = "OK"
