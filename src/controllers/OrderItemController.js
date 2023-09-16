@@ -25,78 +25,80 @@ class OrderItemController {
   }
 
 
-    async getAllOrderItemByOrder (req, res) {
-        try {
-            const id  = req.query.id
-            const orderItemList = await OrderItem.find({order: id})
-            .populate("order")
-            .populate({
-                path: "product",
-                populate: {
-                    path: "categoryId",
-                    model: "Category"
-                }
-            })
-            .exec()
+  async getAllOrderItemByOrder(req, res) {
+    try {
+      const id = req.query.id
+      const orderItemList = await OrderItem.find({ order: id })
+        .populate("order")
+        .populate({
+          path: "product",
+          populate: {
+            path: "categoryId",
+            model: "Category"
+          }
+        })
+        .exec()
 
-            resObj.status = "OK",
-            resObj.message = "Found order successfully !"
-            resObj.data = orderItemList
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
+      resObj.status = "OK",
+        resObj.message = "Found order successfully !"
+      resObj.data = orderItemList
+      res.status(200)
+      res.json(resObj)
+    } catch (error) {
+      resObj.status = "Failed"
+      resObj.message = error.message
+      resObj.data = ""
+      res.status(500)
+      res.json(resObj)
     }
+  }
 
-    async getAllOrderItemByOrderStatus (req, res) {
-        try {
-            const status  = req.query.status
-            const status_order  = req.query.status_order
-            const user = req.query.user
-            const orderItemList = await OrderItem.find({status: status})
-            .populate("order")
-            .populate({
-                path: "product",
-                populate: {
-                    path: "categoryId",
-                    model: "Category"
-                }
-            })
-            .exec()
-            
-            const newData = orderItemList.filter((orderItem) => orderItem.order.status == status_order && orderItem.order.user == user )
+  async getAllOrderItemByOrderStatus(req, res) {
+    try {
+      const status = req.query.status
+      const status_order = req.query.status_order
+      const user = req.query.user
 
-            resObj.status = "OK",
-            resObj.message = "Found order successfully !"
-            resObj.data = newData
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
+      console.log(status)
+      const orderItemList = await OrderItem.find({ status: status })
+        .populate("order")
+        .populate({
+          path: "product",
+          populate: {
+            path: "categoryId",
+            model: "Category"
+          }
+        })
+        .exec()
+
+      const newData = orderItemList.filter((orderItem) => orderItem?.order?.status == status_order && orderItem?.order?.user == user)
+
+      resObj.status = "OK"
+      resObj.message = "Found order successfully !"
+      resObj.data = newData
+      res.status(200)
+      res.json(resObj)
+    } catch (error) {
+      resObj.status = "Failed"
+      resObj.message = error.message
+      resObj.data = ""
+      res.status(500)
+      res.json(resObj)
     }
+  }
 
-     async getOrderItemById (req, res) {
-        try {
-            var id = req.params.id
-            const orderItem = await OrderItem.findOne({'_id':id})
-            .populate("order")
-            .populate("product")
-            .exec()
-            if (orderItem) {
-                resObj.status = "OK"
-                resObj.message = "Found order successfully"
-                resObj.data = orderItem
-            }
+  async getOrderItemById(req, res) {
+    try {
+      var id = req.params.id
+      const orderItem = await OrderItem.findOne({ '_id': id })
+        .populate("order")
+        .populate("product")
+        .exec()
+      if (orderItem) {
+        resObj.status = "OK"
+        resObj.message = "Found order successfully"
+        resObj.data = orderItem
+      }
       res.status(200);
       res.json(resObj);
     } catch (error) {
