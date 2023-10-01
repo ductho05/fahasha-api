@@ -1,6 +1,16 @@
 const express = require("express")
 const router = express.Router()
 
+// local
+//const urlapi = "http://localhost:3000/bookstore/api/v1"
+// deloy
+const urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
+    
+// local
+//const urlui = "http://localhost:3456"
+// deloy
+const urlui = "https://fahasha-clone.onrender.com"
+    
 // let $ = require('jquery');
 // const request = require('request');
 const moment = require('moment');
@@ -10,7 +20,7 @@ let config =
     vnp_HashSecret:"DBNOFJNUFFSKXILZEOKJFOISJTZVUCLY",
     vnp_Url:"https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
     vnp_Api:"https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
-    vnp_ReturnUrl: "http://localhost:3000/bookstore/api/v1/orders/vnpay_return"
+    vnp_ReturnUrl: `${urlapi}/orders/vnpay_retur`
   }
 
 const orderControllers = require("../controllers/OrderControllers")
@@ -132,7 +142,7 @@ router.get('/vnpay_return', function (req, res, next) {
     let crypto = require("crypto");     
     let hmac = crypto.createHmac("sha512", secretKey);
     let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");     
-    res.redirect(`http://localhost:3456/checkout?signed=${req.query.vnp_TxnRef}&status=${req.query.vnp_ResponseCode}`)
+    res.redirect(`${urlui}/checkout?signed=${req.query.vnp_TxnRef}&status=${req.query.vnp_ResponseCode}`)
  
     // if(secureHash === signed){
     //     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
