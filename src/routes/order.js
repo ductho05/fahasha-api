@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 
 // let $ = require('jquery');
-const request = require('request');
+// const request = require('request');
 const moment = require('moment');
 let config =
 {
@@ -10,7 +10,7 @@ let config =
     vnp_HashSecret:"DBNOFJNUFFSKXILZEOKJFOISJTZVUCLY",
     vnp_Url:"https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
     vnp_Api:"https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
-    vnp_ReturnUrl: "http://localhost:8888/order/vnpay_return"
+    vnp_ReturnUrl: "http://localhost:3000/bookstore/api/v1/orders/vnpay_return"
   }
 
 const orderControllers = require("../controllers/OrderControllers")
@@ -63,10 +63,10 @@ router.post('/create_payment_url', function (req, res, next) {
 
     //let config = require('config');
     
-    let tmnCode = 'B5WWELNC';
-    let secretKey = 'DBNOFJNUFFSKXILZEOKJFOISJTZVUCLY';
-    let vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    let returnUrl = 'http://localhost:3456/checkout';
+    let tmnCode = config.vnp_TmnCode;
+    let secretKey = config.vnp_HashSecret;
+    let vnpUrl = config.vnp_Url;
+    let returnUrl = config.vnp_ReturnUrl;
     let orderId = moment(date).format('DDHHmmss');
     let amount = req.query.amount;
     let bankCode = '';
@@ -105,38 +105,44 @@ router.post('/create_payment_url', function (req, res, next) {
     vnp_Params['vnp_SecureHash'] = signed;
     vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
+    console.log("DAY NE TROI1", vnp_Params)
     let obj = {
-        data: vnpUrl
+        data: vnpUrl,
+        signed: vnp_Params.vnp_TxnRef
     }
     return res.json(obj);
 });
 
-// router.get('/vnpay_return', function (req, res, next) {
-//     let vnp_Params = req.query;
+router.get('/vnpay_return', function (req, res, next) {
+    let vnp_Params = req.query;
 
-//     let secureHash = vnp_Params['vnp_SecureHash'];
+    console.log("DAY NE TROI2", vnp_Params.vnp_TxnRef)
+    let secureHash = vnp_Params['vnp_SecureHash'];
 
-//     delete vnp_Params['vnp_SecureHash'];
-//     delete vnp_Params['vnp_SecureHashType'];
+    delete vnp_Params['vnp_SecureHash'];
+    delete vnp_Params['vnp_SecureHashType'];
 
-//     vnp_Params = sortObject(vnp_Params);
+    vnp_Params = sortObject(vnp_Params);
 
-//     let tmnCode = config.vnp_TmnCode
-//     let secretKey = config.vnp_HashSecret
+    let tmnCode = config.vnp_TmnCode
+    let secretKey = config.vnp_HashSecret
 
-//     let querystring = require('qs');
-//     let signData = querystring.stringify(vnp_Params, { encode: false });
-//     let crypto = require("crypto");     
-//     let hmac = crypto.createHmac("sha512", secretKey);
-//     let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");     
-
-//     if(secureHash === signed){
-//         //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-//         res.render('success', {code: vnp_Params['vnp_ResponseCode']})
-//     } else{
-//         res.render('success', {code: '97'})
-//     }
-// });
+    let querystring = require('qs');
+    let signData = querystring.stringify(vnp_Params, { encode: false });
+    let crypto = require("crypto");     
+    let hmac = crypto.createHmac("sha512", secretKey);
+    let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");     
+    res.redirect(`http://localhost:3456/checkout?signed=${req.query.vnp_TxnRef}&status=${req.query.vnp_ResponseCode}`)
+ 
+    // if(secureHash === signed){
+    //     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+    //     //res.render('success', {code: vnp_Params['vnp_ResponseCode']})
+    //     res.redirect(`http://localhost:3456/checkout?signed=${req.query.vnp_TxnRef}&status=${req.query.vnp_TransactionStatus}`)
+    // } else{
+    //     //res.render('success', {code: '97'})
+    //     res.redirect(`http://localhost:3456/checkout?signed=${req.query.vnp_TxnRef}&status=${req.query.vnp_TransactionStatus}`)
+    // }
+});
 
 // router.get('/vnpay_ipn', function (req, res, next) {
 //     let vnp_Params = req.query;

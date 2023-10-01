@@ -59,7 +59,6 @@ class OrderItemController {
       const status_order = req.query.status_order
       const user = req.query.user
 
-      console.log(status)
       const orderItemList = await OrderItem.find({ status: status })
         .populate("order")
         .populate({

@@ -43,7 +43,7 @@ class CartControllers {
         try {
             const cart = new Cart({...req.body})
             const oldCart = await Cart.findOne({user: cart.user.toString()}).exec()
-            console.log(oldCart)
+           
             if (!oldCart) {
                 if (cart.total==null) {
 

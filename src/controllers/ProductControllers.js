@@ -533,7 +533,6 @@ class ProductControllers {
       const data = await Product.find({
         "category.name": category.name,
       });
-      console.log(data);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Get product successfully";
