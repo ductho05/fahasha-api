@@ -2,14 +2,14 @@ const express = require("express")
 const router = express.Router()
 
 // local
-//const urlapi = "http://localhost:3000/bookstore/api/v1"
+const urlapi = "http://localhost:3000/bookstore/api/v1"
 // deloy
-const urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
+//const urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
     
 // local
-//const urlui = "http://localhost:3456"
+const urlui = "http://localhost:3456"
 // deloy
-const urlui = "https://fahasha-clone.onrender.com"
+//const urlui = "https://fahasha-clone.onrender.com"
     
 // let $ = require('jquery');
 // const request = require('request');
@@ -20,7 +20,7 @@ let config =
     vnp_HashSecret:"DBNOFJNUFFSKXILZEOKJFOISJTZVUCLY",
     vnp_Url:"https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
     vnp_Api:"https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
-    vnp_ReturnUrl: `${urlapi}/orders/vnpay_retur`
+    vnp_ReturnUrl: `${urlapi}/orders/vnpay_return`
   }
 
 const orderControllers = require("../controllers/OrderControllers")
