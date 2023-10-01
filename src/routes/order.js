@@ -2,14 +2,14 @@ const express = require("express")
 const router = express.Router()
 
 // local
-const urlapi = "http://localhost:3000/bookstore/api/v1"
+//const urlapi = "http://localhost:3000/bookstore/api/v1"
 // deloy
-//const urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
+const urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
     
 // local
-const urlui = "http://localhost:3456"
+//const urlui = "http://localhost:3456"
 // deloy
-//const urlui = "https://fahasha-clone.onrender.com"
+const urlui = "https://fahasha-clone.onrender.com"
     
 // let $ = require('jquery');
 // const request = require('request');
@@ -126,7 +126,6 @@ router.post('/create_payment_url', function (req, res, next) {
 router.get('/vnpay_return', function (req, res, next) {
     let vnp_Params = req.query;
 
-    console.log("DAY NE TROI2", vnp_Params.vnp_TxnRef)
     let secureHash = vnp_Params['vnp_SecureHash'];
 
     delete vnp_Params['vnp_SecureHash'];
