@@ -58,7 +58,7 @@ class CartItemControllers {
     async insertCardItem (req, res) {
         try {
             const cartItem = new CartItem({...req.body})
-            console.log(cartItem)
+   
         if (cartItem.quantity==null) {
 
             resObj.status = "Failed"

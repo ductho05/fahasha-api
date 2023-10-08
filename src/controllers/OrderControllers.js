@@ -68,7 +68,6 @@ class OrderController {
 
 
     try {
-      console.log(status);
       const orderList = await Order.find({ user: user, status: new RegExp(status, "i") })
         .sort({ updatedAt: -1 })
         .skip((page - 1) * limit)

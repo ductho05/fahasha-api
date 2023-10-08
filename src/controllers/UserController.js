@@ -14,7 +14,7 @@ class UserController {
         try {
             const { email } = req.body
             const otp = Math.floor(1000 + Math.random() * 1000000)
-            console.log(email)
+
 
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
@@ -65,7 +65,7 @@ class UserController {
                 res.json(resObj)
             } else {
                 const decoded = jwt.verify(token, constants.TOKEN_KEY)
-                console.log(decoded)
+
                 const user = await User.findOne({ _id: decoded.user_id })
                 resObj.status = "OK"
                 resObj.message = "get user successfully"
@@ -392,7 +392,6 @@ class UserController {
                 user.images = file.path
             }
             if (user.password.trim() == "" || user.email.trim() == "") {
-
                 resObj.status = "Failed"
                 resObj.message = "Records is null"
                 resObj.data = ""
@@ -460,7 +459,6 @@ class UserController {
                 newUser.images = file.path
             }
             if (newUser.password) {
-                console.log('new password')
                 const encryptedPassword = await bcrypt.hash(newUser.password, 10);
                 newUser.password = encryptedPassword
             }
