@@ -5,7 +5,7 @@ const upload = require("../config/cloudinary")
 
 router.get("/", userController.getAllUsers)
 router.get("/:id", userController.getUserById)
-router.post("/insert", userController.insertUser)
+router.post("/insert", upload.single("images"), userController.insertUser)
 router.delete("/delete/:id", userController.removeUser)
 router.put("/update/:id", upload.single("images"), userController.updateUser)
 router.post("/search", userController.getAllUserByName)

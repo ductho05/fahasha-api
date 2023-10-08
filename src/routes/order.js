@@ -13,5 +13,6 @@ router.post("/", orderControllers.getAllOrderPaginaion)
 router.post("/filter", orderControllers.getAllOrderByStatus)
 router.post("/filter/time", orderControllers.getAllOrderByTime)
 router.get("/status", orderControllers.getTotalOrderByStatus)
+router.post("/user", orderControllers.getAllOrderByUser)
 
 module.exports = router

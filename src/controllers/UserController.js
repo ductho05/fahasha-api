@@ -387,8 +387,11 @@ class UserController {
     async insertUser(req, res) {
         try {
             const user = new User({ ...req.body })
-            console.log(user)
-            if (user.username.trim() == "" || user.password.trim() == "" || user.email.trim() == "") {
+            const file = req.file
+            if (file) {
+                user.images = file.path
+            }
+            if (user.password.trim() == "" || user.email.trim() == "") {
 
                 resObj.status = "Failed"
                 resObj.message = "Records is null"
