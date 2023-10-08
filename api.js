@@ -6,7 +6,7 @@ class Constants {
 // deloy
  urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
     
-// local1
+// local112
  // urlui = "http://localhost:3456"
 // deloy
 urlui = "https://bookstore-ta.vercel.app"
