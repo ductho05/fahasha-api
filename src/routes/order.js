@@ -7,9 +7,9 @@ const router = express.Router()
 const urlapi ="https://bookstore-api-0a2i.onrender.com/bookstore/api/v1"
     
 // local
-const urlui = "http://localhost:3456"
+//const urlui = "http://localhost:3456"
 // deloy
-//const urlui = "https://fahasha-clone.onrender.com"
+const urlui = "https://fahasha-clone.onrender.com"
     
 // let $ = require('jquery');
 // const request = require('request');
