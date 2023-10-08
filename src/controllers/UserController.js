@@ -14,7 +14,7 @@ class UserController {
         try {
             const { email } = req.body
             const otp = Math.floor(1000 + Math.random() * 1000000)
-   
+
 
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
@@ -65,7 +65,7 @@ class UserController {
                 res.json(resObj)
             } else {
                 const decoded = jwt.verify(token, constants.TOKEN_KEY)
-             
+
                 const user = await User.findOne({ _id: decoded.user_id })
                 resObj.status = "OK"
                 resObj.message = "get user successfully"
@@ -387,9 +387,11 @@ class UserController {
     async insertUser(req, res) {
         try {
             const user = new User({ ...req.body })
-         
-            if (user.username.trim() == "" || user.password.trim() == "" || user.email.trim() == "") {
-
+            const file = req.file
+            if (file) {
+                user.images = file.path
+            }
+            if (user.password.trim() == "" || user.email.trim() == "") {
                 resObj.status = "Failed"
                 resObj.message = "Records is null"
                 resObj.data = ""

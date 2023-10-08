@@ -4,6 +4,32 @@ const responeObject = require("../models/responeObject");
 var resObj = new responeObject("", "", {});
 class OrderController {
 
+  async getAllOrderByUser(req, res) {
+    try {
+      const { user } = req.body
+      if (user) {
+        const listOrder = await Order.find({ user: user })
+          .sort({ updatedAt: -1 })
+          .limit(10)
+          .exec()
+        resObj.status = "OK"
+        resObj.message = "Found orders successfully"
+        resObj.data = listOrder
+        res.json(resObj)
+      } else {
+        resObj.status = "Error"
+        resObj.message = "user is empty"
+        resObj.data = []
+        res.json(resObj)
+      }
+    } catch (err) {
+      resObj.status = "Error"
+      resObj.message = err.message
+      resObj.data = []
+      res.json(resObj)
+    }
+  }
+
   // Lấy tổng số lượng đơn hàng theo cả 5 trạng thái
 
   async getTotalOrderByStatus(req, res) {
@@ -11,7 +37,7 @@ class OrderController {
       const total = await Order.aggregate([
         {
           $group: {
-            status: "DAGIAO",            
+            status: "DAGIAO",
             count: { $sum: 1 },
           },
         },
@@ -66,9 +92,9 @@ class OrderController {
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const user = req.query.user
-    
+
     try {
-      const orderList = await Order.find({user: user})
+      const orderList = await Order.find({ user: user })
         .sort({ updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit);
@@ -147,42 +173,42 @@ class OrderController {
     }
   }
 
-    // // Lấy tất cả các đơn hàng
-    // async getAllOrders(req, res) {
-    //     var page = req.query.page;
-    //     var limit = req.query.limit;
-    //     var status = req.query.status;
-    //     var name = req.query.name;
-    //     var firstTime = req.query.ftime;
-    //     var lastTime = req.query.ltime;
-    //     var sort = req.query.sort;
-    //     var user = req.query.user;
-    //     try {
-    //       const data = await Order.find(
-    //         status ? { status: new RegExp(status, "i") } : {}
-    //       )
-    //         .find(user ? { user: user } : {})
-    //         .sort(sort ? { updatedAt: sort } : {}).populate("user").exec();
-    
-    //       if (data) {
-    //         resObj.status = "OK";
-    //         resObj.message = "Found product successfully";
-    //         resObj.data = data;
-    //         res.json(resObj);
-    //       } else {
-    //         resObj.status = "Failed";
-    //         resObj.message = "Not found data";
-    //         resObj.data = "";
-    //         res.json(resObj);
-    //       }
-    //     } catch (err) {
-    //       resObj.status = "Failed";
-    //       resObj.message = "Error when get data" + err;
-    //       resObj.data = "";
-    //       res.json(resObj);
-    //     }
-    //   }
-   
+  // // Lấy tất cả các đơn hàng
+  // async getAllOrders(req, res) {
+  //     var page = req.query.page;
+  //     var limit = req.query.limit;
+  //     var status = req.query.status;
+  //     var name = req.query.name;
+  //     var firstTime = req.query.ftime;
+  //     var lastTime = req.query.ltime;
+  //     var sort = req.query.sort;
+  //     var user = req.query.user;
+  //     try {
+  //       const data = await Order.find(
+  //         status ? { status: new RegExp(status, "i") } : {}
+  //       )
+  //         .find(user ? { user: user } : {})
+  //         .sort(sort ? { updatedAt: sort } : {}).populate("user").exec();
+
+  //       if (data) {
+  //         resObj.status = "OK";
+  //         resObj.message = "Found product successfully";
+  //         resObj.data = data;
+  //         res.json(resObj);
+  //       } else {
+  //         resObj.status = "Failed";
+  //         resObj.message = "Not found data";
+  //         resObj.data = "";
+  //         res.json(resObj);
+  //       }
+  //     } catch (err) {
+  //       resObj.status = "Failed";
+  //       resObj.message = "Error when get data" + err;
+  //       resObj.data = "";
+  //       res.json(resObj);
+  //     }
+  //   }
+
   // Lấy tất cả các đơn hàng
   async getAllOrders(req, res) {
     var page = req.query.page;

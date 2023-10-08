@@ -5,6 +5,24 @@ const mongoose = require("mongoose")
 var resObj = new responeObject("", "", {})
 class EvaluateController {
 
+    async getAllComment(req, res) {
+        try {
+            const reviews = await Evaluate.find()
+                .populate("product")
+                .populate("user")
+                .sort({ createdAt: -1 }).exec()
+            resObj.status = "OK"
+            resObj.message = "Get all comments successfully"
+            resObj.data = reviews
+            res.json(resObj)
+        } catch (err) {
+            resObj.status = "Failed"
+            resObj.message = err.message
+            resObj.data = {}
+            res.json(resObj)
+        }
+    }
+
     async likeComment(req, res) {
         try {
             const { commentId, userId } = req.body
