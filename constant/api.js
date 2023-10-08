@@ -8,7 +8,7 @@ class Constants {
     
 // local
  // urlui = "http://localhost:3456"
-// deloy
+// deloy111
 urlui = "https://bookstore-ta.vercel.app"
 }
 
