@@ -3,7 +3,7 @@ const responeObject = require('../models/responeObject')
 const { ConnectionStates } = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const constants = require('../constants/index.js')
+const constants = require('../../api.js')
 const nodemailer = require('nodemailer')
 
 var resObj = new responeObject('', '', {})

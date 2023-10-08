@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router()
 
-const constants = require('../constants/index.js')
+const constants = require('../../api.js')
 // // local
 // //const urlapi = "http://localhost:3000/bookstore/api/v1"
 // // deloy
