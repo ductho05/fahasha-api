@@ -158,7 +158,7 @@ class ProductControllers {
       if (id == '') {
         data = await Product.count()
       } else {
-        data = await Product.count({categoryId: id})
+        data = await Product.count({ categoryId: id })
       }
       if (data) {
         resObj.status = "OK";
@@ -236,7 +236,7 @@ class ProductControllers {
         {
           $group: {
             _id: "$categoryId",
-            
+
             count: { $sum: 1 },
           },
         },
@@ -274,7 +274,7 @@ class ProductControllers {
             count: { $sum: 1 },
           },
         },
-        { $sort: { _id: -1 } },    
+        { $sort: { _id: -1 } },
       ]);
       if (data) {
         resObj.status = "OK";
