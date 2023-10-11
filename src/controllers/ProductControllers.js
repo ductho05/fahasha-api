@@ -13,6 +13,8 @@ class ProductControllers {
 
     // Tên sách
     var title = req.query.title;
+    // Lấy num sản phẩm thôi
+    var num = req.query.num;
 
     // Số trang
     var page = parseInt(req.query.page);
@@ -21,7 +23,7 @@ class ProductControllers {
     // Tính số sản phẩm bỏ qua
     var start = (page - 1) * perPage;
     // Tính số sản phẩm lấy ra
-    var end = perPage;
+    var end = perPage ? perPage : num;
 
     // Sắp xếp
     var sort = req.query.sort;
@@ -29,12 +31,12 @@ class ProductControllers {
     // Sắp xếp theo trường nào đó
     var filter = req.query.filter;
 
-    // Lấy num sản phẩm thôi
-    var num = req.query.num;
+    
 
     try {
       const data = await Product.find(category ? { categoryId: category } : {})
         .find(title ? { title: new RegExp(title, "i") } : {})
+        .find({images : { $ne: null } })
         .populate("categoryId")
         .skip(start)
         .limit(end)
@@ -126,7 +128,7 @@ class ProductControllers {
         }
       }
 
-      // Lấy num sản phẩm thôi
+      //Lấy num sản phẩm thôi
       if (num > 0) {
         data.splice(num);
       }
