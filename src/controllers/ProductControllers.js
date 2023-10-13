@@ -31,15 +31,16 @@ class ProductControllers {
     // Sắp xếp theo trường nào đó
     var filter = req.query.filter;
 
-    
+
 
     try {
       const data = await Product.find(category ? { categoryId: category } : {})
         .find(title ? { title: new RegExp(title, "i") } : {})
-        .find({images : { $ne: null } })
+        .find({ images: { $ne: null } })
         .populate("categoryId")
         .skip(start)
         .limit(end)
+        .sort({ "updatedAt": -1 })
         .exec();
       if (sort) {
         if (filter == "price") {
@@ -585,11 +586,18 @@ class ProductControllers {
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
-      const data = await Product.create(req.body).populate("categoryId");
-      if (data) {
+      const product = new Product({ ...req.body })
+      const file = req.file
+      console.log(file)
+
+      if (file) {
+        product.images = file.path
+      }
+      if (product) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";
-        resObj.data = data;
+        resObj.data = product;
+        product.save()
         return res.json(resObj);
       } else {
         resObj.status = "Failed";

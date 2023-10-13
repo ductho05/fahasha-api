@@ -60,24 +60,39 @@ class OrderController {
 
   // Lấy đơn hàng theo trạng thái đơn hàng
   async getAllOrderByStatus(req, res) {
-    const page = req.query.page | 1;
-    const limit = req.query.limit | 10;
+    const page = req.query.page;
+    const limit = req.query.limit;
     const status = req.query.status;
     const user = req.query.user;
 
 
 
     try {
-      const orderList = await Order.find({ user: user, status: new RegExp(status, "i") })
-        .sort({ updatedAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
+      if (user) {
+        const orderList = await Order.find({ user: user, status: new RegExp(status, "i") })
+          .populate("user")
+          .sort({ updatedAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit);
 
-      resObj.status = "OK";
-      resObj.message = "Found orders successfully";
-      resObj.data = orderList;
-      res.status(200);
-      res.json(resObj);
+        resObj.status = "OK";
+        resObj.message = "Found orders successfully";
+        resObj.data = orderList;
+        res.status(200);
+        res.json(resObj);
+      } else {
+        const orderList = await Order.find({ status: new RegExp(status, "i") })
+          .populate("user")
+          .sort({ updatedAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit);
+
+        resObj.status = "OK";
+        resObj.message = "Found orders successfully";
+        resObj.data = orderList;
+        res.status(200);
+        res.json(resObj);
+      }
     } catch (error) {
       resObj.status = "Failed";
       resObj.message = error.message;
