@@ -616,24 +616,18 @@ class ProductControllers {
   // Sửa dữ liệu sách theo id
   async updateProduct(req, res) {
     try {
-      const data = await Product.updateMany(
-        { _id: req.params.id },
-        {
-          $set: {
-            title: req.body.title,
-            author: req.body.author,
-            published_date: req.body.published_date,
-            price: req.body.price,
-            isbn: req.body.isbn,
-            publisher: req.body.publisher,
-            pages: req.body.pages,
-          },
-        }
-      );
-      if (data) {
+      const id = req.params.id
+      const filter = { _id: id }
+      const updateProduct = { ...req.body }
+      const file = req.file
+      if (file) {
+        updateProduct.images = file.path
+      }
+      const result = await Product.findByIdAndUpdate(filter, updateProduct).exec()
+      if (result) {
         resObj.status = "OK";
         resObj.message = "Update product successfully";
-        resObj.data = data;
+        resObj.data = updateProduct;
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
