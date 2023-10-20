@@ -5,6 +5,8 @@ const upload = require("../config/cloudinary")
 
 router.get("/", FlashSaleController.getProduct)
 router.post("/add", FlashSaleController.addProduct)
+router.get("/delete/:id", FlashSaleController.deleteFlashSale)
 
+//setInterval(FlashSaleController.checkAndDeleteExpiredSales, 1000);
 
 module.exports = router

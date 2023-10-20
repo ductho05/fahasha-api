@@ -28,12 +28,38 @@ class FlashSaleControllers {
 
     // Sắp xếp theo trường nào đó
     var filter = req.query.filter;
-
-
+    var productId = req.query.productId;
+    
 
     try {
-
-      const flashSales = await FlashSale.find( {})
+      const currentDate = new Date();
+      
+      let current_point_sale = Math.floor(currentDate.getHours()/3);      
+      let toDay = currentDate.toISOString().slice(0, 10);
+      
+      const flashSales = await FlashSale
+      // tìm theo  id
+      .find(productId ? {product: productId} : {})
+      // tìm theo ngày và khung giờ
+      .find(filter == "expired" ? {
+        $and: [
+          { date_sale: toDay },
+          { point_sale: current_point_sale },
+        ],
+      } : {})
+      .find(filter == "no-expired" ? {
+        $or: [
+    {
+     $and: [
+          { date_sale: toDay },
+          { point_sale: {$gt : current_point_sale} },
+        ],
+    },
+    {
+      date_sale: { $gt: toDay },     
+    }
+  ]
+      } : {})
       .populate({
         path: 'product',
         populate: {
@@ -160,22 +186,62 @@ class FlashSaleControllers {
       res.json(resObj);
     }
   }
+
+
  
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
+      const currentDate = new Date();
+      const inputDate = new Date(req.body.date_sale);
+
+      const currentHour = currentDate.getHours();      
+      const inputTime = req.body.point_sale;
+
+      let toDay = currentDate.toISOString().slice(0, 10);
+      let inputDay = inputDate.toISOString().slice(0, 10);
+  
+    
+      // Kiểm tra xem ngày date_sale có nằm trong quá khứ không
+      if (inputDay < toDay || (inputDay == toDay && (inputTime+1)*3 <= currentHour)) {
+        resObj.status = "Failed";
+        resObj.message = "Không thể thiết đặt cho khung giờ quá khứ.";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+// Tìm kiếm bản ghi trong cơ sở dữ liệu có các trường quan trọng giống với dữ liệu đầu vào
+    const existingRecord = await FlashSale.findOne({
+      date_sale: req.body.date_sale,
+      point_sale: req.body.point_sale,
+      product: req.body.product,
+      current_sale: req.body.current_sale,
+      //Thêm bất kỳ trường quan trọng nào khác bạn muốn kiểm tra ở đây.
+    });
+
+    if (existingRecord) {
+      // Nếu tìm thấy bản ghi trùng, cộng thêm số lượng
+      existingRecord.num_sale += req.body.num_sale;
+      await existingRecord.save();
+      resObj.status = "OK";
+      resObj.message = "Update product quantity successfully";
+      resObj.data = existingRecord;
+    } else {
+
+
       const data = await FlashSale.create(req.body);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";
         resObj.data = data;
-        return res.json(resObj);
+        
       } else {
         resObj.status = "Failed";
         resObj.message = "Add product failed";
         resObj.data = {};
-        return res.json(resObj);
+       
       }
+    }
+    return res.json(resObj);
     } catch (err) {
       resObj.status = "Failed";
       resObj.message = `Error add data. Error: ${err}`;
@@ -220,10 +286,35 @@ class FlashSaleControllers {
     }
   }
 
+  // Hàm kiểm tra và xóa Flash Sale hết hạn
+  async checkAndDeleteExpiredSales(req, res)  {
+
+  try {
+    const currentDate = new Date();
+      //const inputDate = new Date(req.body.date_sale);
+
+      const currentHour = currentDate.getHours();      
+     // const inputTime = req.body.point_sale;
+
+      let toDay = currentDate.toISOString().slice(0, 10);
+      //let inputDay = inputDate.toISOString().slice(0, 10);
+      console.log(toDay);
+    // Tìm tất cả các Flash Sale đã hết hạn
+    const expiredSales = await FlashSale.find({ date_sale: { $lte: toDay } });
+    // Xóa các Flash Sale đã hết hạn
+    for (const sale of expiredSales) {
+      await FlashSale.deleteOne({ _id: sale._id });
+    }
+  } catch (err) {
+    console.error('Lỗi khi kiểm tra và xóa Flash Sale hết hạn:', err);
+  }
+};
+
+
   // Xóa dữ liệu sách theo id
-  async deleteProduct(req, res) {
+  async deleteFlashSale(req, res) {
     try {
-      const data = await Product.deleteOne({ _id: req.params.id });
+      const data = await FlashSale.deleteOne({ _id: req.params.id });
       if (data) {
         resObj.status = "OK";
         resObj.message = "Delete product successfully";
@@ -242,6 +333,9 @@ class FlashSaleControllers {
       return res.json(resObj);
     }
   }
+
+
 }
+
 
 module.exports = new FlashSaleControllers();
