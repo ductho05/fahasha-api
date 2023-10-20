@@ -11,7 +11,7 @@ const Product = new Schema({
     // isbn: { type: String }, // Mã ISBN
     rate: { type: Number }, // Đánh giá
     sold: { type: Number }, // Số lượng đã bán
-    description: { type: String, require: true }, // Mô tả
+    desciption: { type: String, require: true }, // Mô tả
     // discount: { type: Number }, // Giảm giá
     status: { type: String, require: true, default: "Còn hàng" }, // Trạng thái
     // pages: { type: String }, // Số trang
@@ -19,5 +19,5 @@ const Product = new Schema({
     categoryId: { type: mongoose.Schema.Types.String, ref: "Category" },
     //orderItem: { type: mongoose.Schema.Types.ObjectId, ref: "OrderItem" },
 });
-    
+
 module.exports = mongoose.model("Product", Product);

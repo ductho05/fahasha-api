@@ -31,15 +31,16 @@ class ProductControllers {
     // Sắp xếp theo trường nào đó
     var filter = req.query.filter;
 
-    
+
 
     try {
       const data = await Product.find(category ? { categoryId: category } : {})
         .find(title ? { title: new RegExp(title, "i") } : {})
-        .find({images : { $ne: null } })
+        .find({ images: { $ne: null } })
         .populate("categoryId")
         .skip(start)
         .limit(end)
+        .sort({ "updatedAt": -1 })
         .exec();
       if (sort) {
         if (filter == "price") {
@@ -160,7 +161,7 @@ class ProductControllers {
       if (id == '') {
         data = await Product.count()
       } else {
-        data = await Product.count({categoryId: id})
+        data = await Product.count({ categoryId: id })
       }
       if (data) {
         resObj.status = "OK";
@@ -238,7 +239,7 @@ class ProductControllers {
         {
           $group: {
             _id: "$categoryId",
-            
+
             count: { $sum: 1 },
           },
         },
@@ -276,7 +277,7 @@ class ProductControllers {
             count: { $sum: 1 },
           },
         },
-        { $sort: { _id: -1 } },    
+        { $sort: { _id: -1 } },
       ]);
       if (data) {
         resObj.status = "OK";
@@ -585,11 +586,18 @@ class ProductControllers {
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
-      const data = await Product.create(req.body).populate("categoryId");
-      if (data) {
+      const product = new Product({ ...req.body })
+      const file = req.file
+      console.log(file)
+
+      if (file) {
+        product.images = file.path
+      }
+      if (product) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";
-        resObj.data = data;
+        resObj.data = product;
+        product.save()
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
@@ -608,24 +616,18 @@ class ProductControllers {
   // Sửa dữ liệu sách theo id
   async updateProduct(req, res) {
     try {
-      const data = await Product.updateMany(
-        { _id: req.params.id },
-        {
-          $set: {
-            title: req.body.title,
-            author: req.body.author,
-            published_date: req.body.published_date,
-            price: req.body.price,
-            isbn: req.body.isbn,
-            publisher: req.body.publisher,
-            pages: req.body.pages,
-          },
-        }
-      );
-      if (data) {
+      const id = req.params.id
+      const filter = { _id: id }
+      const updateProduct = { ...req.body }
+      const file = req.file
+      if (file) {
+        updateProduct.images = file.path
+      }
+      const result = await Product.findByIdAndUpdate(filter, updateProduct).exec()
+      if (result) {
         resObj.status = "OK";
         resObj.message = "Update product successfully";
-        resObj.data = data;
+        resObj.data = updateProduct;
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
