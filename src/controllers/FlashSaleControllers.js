@@ -6,11 +6,43 @@ const responeObject = require("../models/responeObject");
 const resObj = new responeObject("", "", {});
 
 class FlashSaleControllers {
+  // Lấy dữ liệu sách theo id
+  async getFlashById(req, res) {
+    try {
+      const data = await FlashSale.findById(req.params.id)
+      .populate({
+        path: 'product',
+        populate: {
+          path: 'categoryId',
+          model: 'Category' // Tên của mô hình Category
+        }
+      })
+        .exec();
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
+    }
+  }
   // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
   async getProduct(req, res) {
 
     // Tên danh mục
     var categoryId = req.query.categoryId;
+
+
 
     // Lấy num sản phẩm thôi
     var num = req.query.num;
@@ -29,7 +61,11 @@ class FlashSaleControllers {
     // Sắp xếp theo trường nào đó
     var filter = req.query.filter;
     var productId = req.query.productId;
+
+    var date = req.query.date;
+    var point = req.query.point;
     
+    var enddate = req.query.enddate;
 
     try {
       const currentDate = new Date();
@@ -38,9 +74,24 @@ class FlashSaleControllers {
       let toDay = currentDate.toISOString().slice(0, 10);
       
       const flashSales = await FlashSale
+
       // tìm theo  id
+    
       .find(productId ? {product: productId} : {})
       // tìm theo ngày và khung giờ
+
+      .find(!date ? {} :  enddate ? {
+        $and: [
+          { date_sale: { $gte: date } },
+          { date_sale: { $lte: enddate } },         
+        ],
+      } : {       
+        date_sale: date ,
+      })
+      .find(point ? {
+        point_sale: point 
+      } : {})
+
       .find(filter == "expired" ? {
         $and: [
           { date_sale: toDay },
@@ -77,6 +128,7 @@ class FlashSaleControllers {
     });  
 
       if (sort) {
+        if (sort == "reverse") flashSalesWithCategory.reverse();
         if (filter == "num_sale") {
           flashSalesWithCategory.sort(function (a, b) {
             if (sort == "asc") {
@@ -139,6 +191,7 @@ class FlashSaleControllers {
             }
           });
         }
+        
         // if (filter == "status") {
         //   flashSalesWithCategory.sort(function (a, b) {
         //     if (sort == "asc") {
@@ -251,26 +304,19 @@ class FlashSaleControllers {
   }
 
   // Sửa dữ liệu sách theo id
-  async updateProduct(req, res) {
+  // Sửa dữ liệu sách theo id
+  async updateFlashSale(req, res) {
     try {
-      const data = await Product.updateMany(
-        { _id: req.params.id },
-        {
-          $set: {
-            title: req.body.title,
-            author: req.body.author,
-            published_date: req.body.published_date,
-            price: req.body.price,
-            isbn: req.body.isbn,
-            publisher: req.body.publisher,
-            pages: req.body.pages,
-          },
-        }
-      );
-      if (data) {
+      const id = req.params.id
+      const filter = { _id: id }
+      console.log(req.body)
+      const updateProduct = req.body
+      console.log("A", updateProduct)
+      const result = await FlashSale.findByIdAndUpdate(filter, updateProduct).exec()
+      if (result) {
         resObj.status = "OK";
         resObj.message = "Update product successfully";
-        resObj.data = data;
+        resObj.data = updateProduct;
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
