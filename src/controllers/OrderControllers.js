@@ -364,11 +364,11 @@ class OrderController {
       const filter = { _id: id };
       const update = newOrder;
       const options = { new: true };
-      await Order.findByIdAndUpdate(filter, update, options).exec();
+      const order = await Order.findByIdAndUpdate(filter, update, options).exec();
 
       resObj.status = "OK";
       resObj.message = "Update successfully";
-      resObj.data = newOrder;
+      resObj.data = order;
 
       res.status(200);
       res.json(resObj);

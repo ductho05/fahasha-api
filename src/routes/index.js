@@ -11,6 +11,7 @@ const evaluateRouter = require("./evaluate")
 const commentRouter = require("./comment")
 const fieldRouter = require("./field")
 const favoriteRouter = require('./favorite')
+const webPushRouter = require('./webpush')
 const flashuserRouter = require('./flashuser')
 
 function route(app) {
@@ -26,6 +27,7 @@ function route(app) {
   app.use("/bookstore/api/v1/evaluates", evaluateRouter);
   app.use("/bookstore/api/v1/comments", commentRouter);
   app.use("/bookstore/api/v1/favorites", favoriteRouter);
+  app.use("/bookstore/api/v1/webpush", webPushRouter)
   app.use("/bookstore/api/v1/flashusers", flashuserRouter);
 }
 

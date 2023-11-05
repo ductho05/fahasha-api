@@ -14,6 +14,7 @@ const User = new Schema({
     phoneNumber: { type: String, default: "" },
     birth: { type: String, default: "" },
     facebookId: { type: String, require: true },
+    sw_id: { type: Object },
     order: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
     cart: { type: mongoose.Schema.Types.ObjectId, ref: "Cart" }
 }, {
