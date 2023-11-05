@@ -14,7 +14,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.9.3",
     "nodemodule": "^0.3.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "uuid": "^9.0.1"
   },
   "name": "bookstoreapi",
   "version": "1.0.0",

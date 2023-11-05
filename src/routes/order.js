@@ -117,7 +117,6 @@ router.post('/create_payment_url', function (req, res, next) {
     vnp_Params['vnp_SecureHash'] = signed;
     vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
-    console.log("DAY NE TROI1", vnp_Params)
     let obj = {
         data: vnpUrl,
         signed: vnp_Params.vnp_TxnRef

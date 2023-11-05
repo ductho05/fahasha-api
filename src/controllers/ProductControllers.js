@@ -588,7 +588,7 @@ class ProductControllers {
     try {
       const product = new Product({ ...req.body })
       const file = req.file
-      console.log(file)
+
 
       if (file) {
         product.images = file.path
