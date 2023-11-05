@@ -5,5 +5,8 @@ const upload = require("../config/cloudinary")
 
 router.get("/", FlashSaleController.getProduct)
 router.post("/add", FlashSaleController.addProduct)
+router.post("/update/:id", FlashSaleController.updateFlashSale)
+router.get("/delete/:id", FlashSaleController.deleteFlashSale)
+router.get("/:id", FlashSaleController.getFlashById)
  
 module.exports = router

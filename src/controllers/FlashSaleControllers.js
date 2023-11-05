@@ -69,10 +69,14 @@ class FlashSaleControllers {
 
     try {
       const currentDate = new Date();
-      
-      let current_point_sale = Math.floor(currentDate.getHours()/3);      
+          // Chuyển múi giờ sang UTC+7 (Giờ Đông Dương)
+      const utcOffset = 7 * 60; // 7 giờ * 60 phút/giờ
+      currentDate.setMinutes(currentDate.getMinutes() + utcOffset);
+
+
+      let current_point_sale = Math.floor(new Date().getHours()/3);      
       let toDay = currentDate.toISOString().slice(0, 10);
-      
+
       const flashSales = await FlashSale
 
       // tìm theo  id
