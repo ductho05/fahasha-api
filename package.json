@@ -4,6 +4,7 @@
     "body-parser": "^1.20.2",
     "cloudinary": "^1.36.2",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.1",
@@ -14,7 +15,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.9.3",
     "nodemodule": "^0.3.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "web-push": "^3.6.6"
   },
   "name": "bookstoreapi",
   "version": "1.0.0",

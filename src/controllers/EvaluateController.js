@@ -1,4 +1,5 @@
 const Evaluate = require("../models/Evaluate")
+const Product = require("../models/Product")
 const responeObject = require("../models/responeObject")
 const mongoose = require("mongoose")
 
@@ -240,6 +241,8 @@ class EvaluateController {
 
                     res.json(resObj)
                 } else {
+                    const product = await Product.findOne({ _id: evaluate.product }).exec()
+                    evaluate.product = product
                     resObj.status = "OK"
                     resObj.message = "Insert evaluate successfully"
                     resObj.data = evaluate

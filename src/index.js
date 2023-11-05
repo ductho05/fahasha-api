@@ -5,6 +5,7 @@ const cors = require("cors")
 const route = require('./routes')
 const bodyParser = require("body-parser")
 const db = require("./config/db/DbConnection")
+require('dotenv').config()
 
 // Kết nối database
 db.connect()
@@ -13,14 +14,14 @@ db.connect()
 
 // //app.use('/', indexRouter)
 // app.use('/book', bookRouter)
-app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(cors())
 
 route(app)
 
 // Khai báo port
-var port = 3000
+var port = process.env.PORT || 3000
 
 app.listen(port, () => {
     console.log(`App listening port http://127.0.0.1:${port}`)
