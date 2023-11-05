@@ -6,11 +6,43 @@ const responeObject = require("../models/responeObject");
 const resObj = new responeObject("", "", {});
 
 class FlashSaleControllers {
+  // Lấy dữ liệu sách theo id
+  async getFlashById(req, res) {
+    try {
+      const data = await FlashSale.findById(req.params.id)
+      .populate({
+        path: 'product',
+        populate: {
+          path: 'categoryId',
+          model: 'Category' // Tên của mô hình Category
+        }
+      })
+        .exec();
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Get product successfully";
+        resObj.data = data;
+        return res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found product";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = `Error get data. Error: ${err}`;
+      resObj.data = {};
+      return res.json(resObj);
+    }
+  }
   // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
   async getProduct(req, res) {
 
     // Tên danh mục
     var categoryId = req.query.categoryId;
+
+
 
     // Lấy num sản phẩm thôi
     var num = req.query.num;
@@ -28,12 +60,57 @@ class FlashSaleControllers {
 
     // Sắp xếp theo trường nào đó
     var filter = req.query.filter;
+    var productId = req.query.productId;
 
-
+    var date = req.query.date;
+    var point = req.query.point;
+    
+    var enddate = req.query.enddate;
 
     try {
+      const currentDate = new Date();
+      
+      let current_point_sale = Math.floor(currentDate.getHours()/3);      
+      let toDay = currentDate.toISOString().slice(0, 10);
+      
+      const flashSales = await FlashSale
 
-      const flashSales = await FlashSale.find( {})
+      // tìm theo  id
+    
+      .find(productId ? {product: productId} : {})
+      // tìm theo ngày và khung giờ
+
+      .find(!date ? {} :  enddate ? {
+        $and: [
+          { date_sale: { $gte: date } },
+          { date_sale: { $lte: enddate } },         
+        ],
+      } : {       
+        date_sale: date ,
+      })
+      .find(point ? {
+        point_sale: point 
+      } : {})
+
+      .find(filter == "expired" ? {
+        $and: [
+          { date_sale: toDay },
+          { point_sale: current_point_sale },
+        ],
+      } : {})
+      .find(filter == "no-expired" ? {
+        $or: [
+    {
+     $and: [
+          { date_sale: toDay },
+          { point_sale: {$gt : current_point_sale} },
+        ],
+    },
+    {
+      date_sale: { $gt: toDay },     
+    }
+  ]
+      } : {})
       .populate({
         path: 'product',
         populate: {
@@ -51,6 +128,7 @@ class FlashSaleControllers {
     });  
 
       if (sort) {
+        if (sort == "reverse") flashSalesWithCategory.reverse();
         if (filter == "num_sale") {
           flashSalesWithCategory.sort(function (a, b) {
             if (sort == "asc") {
@@ -113,6 +191,7 @@ class FlashSaleControllers {
             }
           });
         }
+        
         // if (filter == "status") {
         //   flashSalesWithCategory.sort(function (a, b) {
         //     if (sort == "asc") {
@@ -160,22 +239,62 @@ class FlashSaleControllers {
       res.json(resObj);
     }
   }
+
+
  
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
+      const currentDate = new Date();
+      const inputDate = new Date(req.body.date_sale);
+
+      const currentHour = currentDate.getHours();      
+      const inputTime = req.body.point_sale;
+
+      let toDay = currentDate.toISOString().slice(0, 10);
+      let inputDay = inputDate.toISOString().slice(0, 10);
+  
+    
+      // Kiểm tra xem ngày date_sale có nằm trong quá khứ không
+      if (inputDay < toDay || (inputDay == toDay && (inputTime+1)*3 <= currentHour)) {
+        resObj.status = "Failed";
+        resObj.message = "Không thể thiết đặt cho khung giờ quá khứ.";
+        resObj.data = {};
+        return res.json(resObj);
+      }
+// Tìm kiếm bản ghi trong cơ sở dữ liệu có các trường quan trọng giống với dữ liệu đầu vào
+    const existingRecord = await FlashSale.findOne({
+      date_sale: req.body.date_sale,
+      point_sale: req.body.point_sale,
+      product: req.body.product,
+      current_sale: req.body.current_sale,
+      //Thêm bất kỳ trường quan trọng nào khác bạn muốn kiểm tra ở đây.
+    });
+
+    if (existingRecord) {
+      // Nếu tìm thấy bản ghi trùng, cộng thêm số lượng
+      existingRecord.num_sale += req.body.num_sale;
+      await existingRecord.save();
+      resObj.status = "OK";
+      resObj.message = "Update product quantity successfully";
+      resObj.data = existingRecord;
+    } else {
+
+
       const data = await FlashSale.create(req.body);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Add product successfully";
         resObj.data = data;
-        return res.json(resObj);
+        
       } else {
         resObj.status = "Failed";
         resObj.message = "Add product failed";
         resObj.data = {};
-        return res.json(resObj);
+       
       }
+    }
+    return res.json(resObj);
     } catch (err) {
       resObj.status = "Failed";
       resObj.message = `Error add data. Error: ${err}`;
@@ -185,26 +304,19 @@ class FlashSaleControllers {
   }
 
   // Sửa dữ liệu sách theo id
-  async updateProduct(req, res) {
+  // Sửa dữ liệu sách theo id
+  async updateFlashSale(req, res) {
     try {
-      const data = await Product.updateMany(
-        { _id: req.params.id },
-        {
-          $set: {
-            title: req.body.title,
-            author: req.body.author,
-            published_date: req.body.published_date,
-            price: req.body.price,
-            isbn: req.body.isbn,
-            publisher: req.body.publisher,
-            pages: req.body.pages,
-          },
-        }
-      );
-      if (data) {
+      const id = req.params.id
+      const filter = { _id: id }
+      console.log(req.body)
+      const updateProduct = req.body
+      console.log("A", updateProduct)
+      const result = await FlashSale.findByIdAndUpdate(filter, updateProduct).exec()
+      if (result) {
         resObj.status = "OK";
         resObj.message = "Update product successfully";
-        resObj.data = data;
+        resObj.data = updateProduct;
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
@@ -220,10 +332,35 @@ class FlashSaleControllers {
     }
   }
 
+  // Hàm kiểm tra và xóa Flash Sale hết hạn
+  async checkAndDeleteExpiredSales(req, res)  {
+
+  try {
+    const currentDate = new Date();
+      //const inputDate = new Date(req.body.date_sale);
+
+      const currentHour = currentDate.getHours();      
+     // const inputTime = req.body.point_sale;
+
+      let toDay = currentDate.toISOString().slice(0, 10);
+      //let inputDay = inputDate.toISOString().slice(0, 10);
+      console.log(toDay);
+    // Tìm tất cả các Flash Sale đã hết hạn
+    const expiredSales = await FlashSale.find({ date_sale: { $lte: toDay } });
+    // Xóa các Flash Sale đã hết hạn
+    for (const sale of expiredSales) {
+      await FlashSale.deleteOne({ _id: sale._id });
+    }
+  } catch (err) {
+    console.error('Lỗi khi kiểm tra và xóa Flash Sale hết hạn:', err);
+  }
+};
+
+
   // Xóa dữ liệu sách theo id
-  async deleteProduct(req, res) {
+  async deleteFlashSale(req, res) {
     try {
-      const data = await Product.deleteOne({ _id: req.params.id });
+      const data = await FlashSale.deleteOne({ _id: req.params.id });
       if (data) {
         resObj.status = "OK";
         resObj.message = "Delete product successfully";
@@ -242,6 +379,9 @@ class FlashSaleControllers {
       return res.json(resObj);
     }
   }
+
+
 }
+
 
 module.exports = new FlashSaleControllers();
