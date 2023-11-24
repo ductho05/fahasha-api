@@ -2,6 +2,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "chai": "^4.3.10",
     "cloudinary": "^1.36.2",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -16,22 +17,27 @@
     "nodemailer": "^6.9.3",
     "nodemodule": "^0.3.0",
     "request": "^2.88.2",
+    "sinon": "^17.0.1",
+    "socket.io": "^4.7.2",
     "web-push": "^3.6.6"
   },
   "name": "bookstoreapi",
   "version": "1.0.0",
   "main": "src/server.js",
   "devDependencies": {
+    "jest": "^29.7.0",
+    "mocha": "^10.2.0",
     "morgan": "^1.10.0",
     "mssql": "^9.1.1",
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
   },
   "engines": {
     "node": "14.x"
   },
   "scripts": {
     "start": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "book",

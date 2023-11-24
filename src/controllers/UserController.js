@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const constants = require('../../constant/api.js')
 const nodemailer = require('nodemailer')
+const Validator = require("../validator/Validator")
+const UserService = require("../services/UserService")
 
 var resObj = new responeObject('', '', {})
 
@@ -128,49 +130,64 @@ class UserController {
             resObj.message = err?.message
             resObj.data = {}
             res.json(resObj)
+        } finally {
+            resObj = {}
         }
     }
 
     async LoginUser(req, res) {
 
         try {
-            const { email, password } = req.body
-            if (!(email && password)) {
+            const { error, value } = Validator.authValidator.validate(req.body)
+            const { email, password } = value
+
+            if (error) {
                 resObj.status = "Falure"
-                resObj.message = "Invalid Input"
+                resObj.message = error.message
                 resObj.data = {}
-                res.json(resObj)
-            }
-
-            // Kiểm tra user trong db
-            const user = await User.findOne({ email: email })
-            if (user && (await bcrypt.compare(password, user.password))) {
-                // Tạo Token
-                const token = jwt.sign(
-                    { user_id: user._id, email },
-                    constants.TOKEN_KEY,
-                    {
-                        expiresIn: "2h",
-                    }
-                )
-
-                resObj.status = "OK"
-                resObj.message = "Login Succsess"
-                resObj.data = user
-                resObj.token = token
-                res.json(resObj)
+                res.status(400).json(resObj)
             } else {
-                resObj.status = "OK"
-                resObj.message = "Email Or Password Not Matched"
-                resObj.data = {}
-                res.json(resObj)
+
+                const response = UserService.Login(email, password)
+
+                console.log(response)
+
+                resObj.status = response.status
+                resObj.message = response.message
+                resObj.data = response.data
+                res.status(response.statusCode).json(resObj)
+
+                // const user = await User.findOne({ email: email })
+                // if (user && (await bcrypt.compare(password, user.password))) {
+                //     // Tạo Token
+                //     const token = jwt.sign(
+                //         { user_id: user._id, email },
+                //         constants.TOKEN_KEY,
+                //         {
+                //             expiresIn: "2h",
+                //         }
+                //     )
+
+                //     resObj.status = "OK"
+                //     resObj.message = "Login Succsess"
+                //     resObj.data = user
+                //     resObj.token = token
+                //     res.json(resObj)
+                // } else {
+                //     resObj.status = "OK"
+                //     resObj.message = "Email Or Password Not Matched"
+                //     resObj.data = {}
+                //     res.json(resObj)
+                // }
             }
 
         } catch (err) {
             resObj.status = "Falure"
             resObj.message = err.message
             resObj.data = {}
-            res.json(resObj)
+            res.status(500).json(resObj)
+        } finally {
+            resObj = {}
         }
     }
 
@@ -221,6 +238,8 @@ class UserController {
             resObj.message = err.message
             resObj.data = {}
             res.json(resObj)
+        } finally {
+            resObj = {}
         }
     }
 
@@ -332,14 +351,12 @@ class UserController {
                 resObj.message = "Found user successfully"
                 resObj.data = user
 
-                res.status(200)
                 res.json(resObj)
             } else {
                 resObj.status = "OK"
                 resObj.message = "Not found user"
                 resObj.data = ""
 
-                res.status(404)
                 res.json(resObj)
             }
         } catch (error) {
@@ -347,7 +364,6 @@ class UserController {
             resObj.message = error.message
             resObj.data = ""
 
-            res.status(500)
             res.json(resObj)
         }
     }
@@ -396,6 +412,7 @@ class UserController {
                 resObj.message = "Records is null"
                 resObj.data = ""
 
+                res.status(200)
                 res.json(resObj)
             }
 

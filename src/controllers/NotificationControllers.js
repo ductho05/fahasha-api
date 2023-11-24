@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const configWebPush = require('../config/webpush')
 const responeObject = require("../models/responeObject");
 const Notification = require('../models/Notification');
@@ -7,6 +6,7 @@ const webpush = require('web-push')
 const User = require('../models/User')
 const jwt = require('jsonwebtoken')
 const constants = require('../../constant/api.js')
+const socket = require('../io')
 
 const resObj = new responeObject("", "", {});
 
@@ -116,7 +116,7 @@ class NotificationControllers {
             const user_id = req.body.id
             const list = await UserNotification.find({ user: user_id })
                 .populate("notification")
-                .sort({ updatedAt: -1 })
+                .sort({ createdAt: -1 })
                 .exec()
 
             resObj.status = "OK"
@@ -134,7 +134,7 @@ class NotificationControllers {
     async getAllNotifications(req, res) {
         try {
             const list = await Notification.find()
-                .sort({ updatedAt: -1 })
+                .sort({ createdAt: -1 })
                 .exec()
 
             resObj.status = "OK"

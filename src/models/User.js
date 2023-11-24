@@ -11,10 +11,11 @@ const User = new Schema({
     email: { type: String, require: true },
     address: { type: String, default: "" },
     city: { type: String, default: "" },
-    phoneNumber: { type: String, default: "" },
+    phoneNumber: { type: String, required: false },
     birth: { type: String, default: "" },
     facebookId: { type: String, require: true },
     sw_id: { type: Object },
+    socket_id: { type: String },
     order: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
     cart: { type: mongoose.Schema.Types.ObjectId, ref: "Cart" }
 }, {
