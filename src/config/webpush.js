@@ -3,7 +3,7 @@ require('dotenv').config()
 
 function configWebPush() {
 
-    cconst vapiKeys = {
+    const vapiKeys = {
         publicKey: process.env.PUBLIC_KEY,
         privateKey: process.env.PRIVATE_KEY
     }
