@@ -53,7 +53,7 @@ class FlashSaleControllers {
 
    
 
-    console.log("currentHourInVietnam: ", currentHourInVietnam);
+    console.log("currentHourInVietnam1: ", currentHourInVietnam);
 
     // Tên danh mục
     var categoryId = req.query.categoryId;
