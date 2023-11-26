@@ -6,8 +6,9 @@ const resObj = new responeObject("", "", {});
 class CategoryControllers {
   // Lấy tất cả category
   async getAllCategory(req, res) {
+    const { filter } = req.query;
     try {
-      const data = await Category.aggregate([
+      const data = filter != "simple" ? await Category.aggregate([
         {
           $addFields: {
             field: {
@@ -32,7 +33,7 @@ class CategoryControllers {
             categories: { $push: '$$ROOT' }
           }
         }
-      ]);
+      ]) : await Category.find({}).exec();
       if (data) {
         resObj.status = "OK";
         resObj.message = "Found category successfully";
@@ -56,6 +57,32 @@ class CategoryControllers {
   async getCategoryById(req, res) {
     try {
       const data = await Category.findById(req.params.id);
+      if (data) {
+        resObj.status = "OK";
+        resObj.message = "Found category successfully";
+        resObj.data = data;
+        res.json(resObj);
+      } else {
+        resObj.status = "Failed";
+        resObj.message = "Not found data";
+        resObj.data = "";
+        res.json(resObj);
+      }
+    } catch (err) {
+      resObj.status = "Failed";
+      resObj.message = "Error when get data";
+      resObj.data = "";
+      res.json(resObj);
+    }
+  }
+
+  // Lấy tất cả category đơn giản
+  async getAllCategorySimple(req, res) {
+    try {
+      const data = await Category.find({
+        status: true
+      }).exec();
+      console.log(data);
       if (data) {
         resObj.status = "OK";
         resObj.message = "Found category successfully";

@@ -1,7 +1,8 @@
 const { Int, Float } = require("mssql");
 const FlashUser = require("../models/FlashUser");
+const FlashSale = require("../models/FlashSale");
 const responeObject = require("../models/responeObject");
-
+const { format } = require('date-fns-tz');
 const resObj = new responeObject("", "", {});
 
 class FlashUserControllers {
@@ -250,27 +251,38 @@ class FlashUserControllers {
   // Thêm dữ liệu sách
   async addFlash(req, res) {
     try {
-      const product = new FlashUser({ ...req.body })
-
-
-      if (product) {
+      const data = await FlashUser.create(req.body);
+      const currentDate = new Date();
+      let toDay = format(currentDate, 'yyyy-MM-dd', { timeZone: 'Asia/Ho_Chi_Minh' });
+      let current_point_sale = Math.floor(new Date().getHours()/3);
+      console.log("current_point_sale", data[0].flashid, toDay, current_point_sale);
+      if (data) {
+        const flashSale = await FlashSale.find({ _id: data[0].flashid, date_sale: toDay, point_sale: current_point_sale });
+        if (flashSale.length > 0) {
+          flashSale[0].sold_sale += data[0].mount;
+          await FlashSale.findByIdAndUpdate(flashSale[0]._id, flashSale[0]).exec();
+        }
+        else {
+          console.log("flashSal not nothing");
+        }
         resObj.status = "OK";
-        resObj.message = "Add product successfully";
-        resObj.data = product;
-        product.save()
+        resObj.message = "Add Flash successfully";
+        resObj.data = data;
         return res.json(resObj);
       } else {
         resObj.status = "Failed";
-        resObj.message = "Add product failed";
+        resObj.message = "Add Flash failed";
         resObj.data = {};
         return res.json(resObj);
       }
+    
     } catch (err) {
       resObj.status = "Failed";
       resObj.message = `Error add data. Error: ${err}`;
       resObj.data = {};
       return res.json(resObj);
     }
+      
   }
 
   // Sửa dữ liệu sách theo id
@@ -310,7 +322,8 @@ class FlashUserControllers {
       const currentHour = currentDate.getHours();      
      // const inputTime = req.body.point_sale;
 
-      let toDay = currentDate.toISOString().slice(0, 10);
+     // let toDay = currentDate.toISOString().slice(0, 10);
+      let toDay = format(currentDate, 'yyyy-MM-dd', { timeZone: 'Asia/Ho_Chi_Minh' });
       //let inputDay = inputDate.toISOString().slice(0, 10);
     // Tìm tất cả các Flash Sale đã hết hạn
     const expiredSales = await FlashUser.find({ date_sale: { $lte: toDay } });

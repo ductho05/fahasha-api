@@ -6,6 +6,8 @@ const Product = new Schema({
     author: { type: String, require: true }, // Tác giả
     published_date: { type: String }, // Năm xuất bản
     // publisher: { type: String }, // Nhà xuất bản
+    flashsaleprice: { type: Number, default: 1 }, // Giá bán trong flashsale
+    containprice: { type: Number, default: 1 }, // lưu trữ giá bán khi hết flashsale
     price: { type: Number, require: true }, // Giá bán
     old_price: { type: Number, require: true }, // Giá cũ
     // isbn: { type: String }, // Mã ISBN

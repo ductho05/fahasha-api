@@ -9,6 +9,7 @@ const FlashSale = new Schema({
     time_sale: { type: Number, require: true, default: 3 }, // Thời gian sale
     num_sale: { type: Number, require: true }, // số lượng bày bán
     sold_sale: { type: Number, require: true, default: 0}, // Số lượng đã bán    
-});
+    is_loop: { type: Boolean, require: true, default: false }, // có lặp lại hay không
+});                         
     
 module.exports = mongoose.model("FlashSale", FlashSale);

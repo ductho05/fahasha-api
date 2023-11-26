@@ -20,14 +20,14 @@ class NotificationControllers {
             const subscription = req.body.subscription;
             const token = req.body.token
 
-            console.log(subscription)
+            //console.log(subscription)
 
             const decoded = jwt.verify(token, constants.TOKEN_KEY)
             const user = await User.findOne({ _id: decoded.user_id })
             user.sw_id = subscription
             await user.save()
 
-            console.log("user: ", user)
+            //console.log("user: ", user)
 
             resObj.status = 'OK'
             resObj.message = 'success'
