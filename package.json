@@ -19,7 +19,8 @@
     "request": "^2.88.2",
     "sinon": "^17.0.1",
     "socket.io": "^4.7.2",
-    "web-push": "^3.6.6"
+    "web-push": "^3.6.6",
+    "uuid": "^9.0.1"
   },
   "name": "bookstoreapi",
   "version": "1.0.0",
