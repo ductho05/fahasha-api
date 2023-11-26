@@ -333,7 +333,7 @@ class FlashSaleControllers {
     return res.json(resObj);
     } catch (err) {
       resObj.status = "Failed";
-      resObj.message = Error add data. Error: ${err};
+      resObj.message = `Error add data. Error: ${err}`;
       resObj.data = {};
       return res.json(resObj);
     }
@@ -426,7 +426,7 @@ class FlashSaleControllers {
       }
     } catch (err) {
       resObj.status = "Failed";
-      resObj.message = Error update data. Error: ${err};
+      resObj.message = `Error update data. Error: ${err}`;
       resObj.data = {};
       return res.json(resObj);
     }
@@ -476,7 +476,7 @@ class FlashSaleControllers {
       }
     } catch (err) {
       resObj.status = "Failed";
-      resObj.message = Error delete data. Error: ${err};
+      resObj.message = `Error delete data. Error: ${err}`;
       resObj.data = {};
       return res.json(resObj);
     }
