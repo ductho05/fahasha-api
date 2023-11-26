@@ -20,6 +20,8 @@ class Validator {
 
     idValidator = Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24,}$/)).required()
 
+    idCategoryValidator = Joi.number().min(1).max(999).required()
+
     userValidator = Joi.object({
         fullName: Joi.string().trim().min(3).max(255).required(),
         gender: Joi.string().valid("male", "female", "other"),
@@ -52,6 +54,18 @@ class Validator {
         password: Joi.string().pattern(
             new RegExp(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
         )
+    })
+
+    categoryValidator = Joi.object({
+        name: Joi.string().trim().min(1).max(255).required(),
+        status: Joi.string().valid("Hoạt động", "Không hoạt động"),
+        field: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24,}$/)).required()
+    })
+
+    categoryUpdateValidator = Joi.object({
+        name: Joi.string().trim().min(1).max(255),
+        status: Joi.string().valid("Hoạt động", "Không hoạt động"),
+        field: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24,}$/))
     })
 }
 

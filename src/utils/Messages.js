@@ -39,6 +39,14 @@ class Messages {
 
     GET_CATEGORY_SUCCESS = "Get category successfully"
 
+    NOT_FOUND_DATA = "Not found data"
+
+    CATEGORY_EXISTS = "Category is exists"
+
+    INSERT_CATEGORY_SUCCESS = "Insert category successfully"
+
+    UPDATE_CATEGORY_SUCCESS = "Update category successfully"
+
 }
 
 module.exports = new Messages
