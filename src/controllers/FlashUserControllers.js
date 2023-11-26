@@ -4,6 +4,16 @@ const FlashSale = require("../models/FlashSale");
 const responeObject = require("../models/responeObject");
 const { format } = require('date-fns-tz');
 const resObj = new responeObject("", "", {});
+const moment = require('moment-timezone');
+
+// Đặt múi giờ cho Việt Nam
+const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+
+// Lấy thời gian hiện tại ở Việt Nam
+const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+
+// Lấy số giờ hiện tại
+const currentHourInVietnam = currentTimeInVietnam.get('hours');
 
 class FlashUserControllers {
   // Lấy dữ liệu sách theo id
@@ -254,7 +264,7 @@ class FlashUserControllers {
       const data = await FlashUser.create(req.body);
       const currentDate = new Date();
       let toDay = format(currentDate, 'yyyy-MM-dd', { timeZone: 'Asia/Ho_Chi_Minh' });
-      let current_point_sale = Math.floor(new Date().getHours()/3);
+      let current_point_sale = Math.floor(currentHourInVietnam/3);
       console.log("current_point_sale", data[0].flashid, toDay, current_point_sale);
       if (data) {
         const flashSale = await FlashSale.find({ _id: data[0].flashid, date_sale: toDay, point_sale: current_point_sale });
