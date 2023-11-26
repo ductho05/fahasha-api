@@ -37,6 +37,8 @@ class Messages {
 
     UPDATE_USER_SUCCESS = "Update user successfully"
 
+    GET_CATEGORY_SUCCESS = "Get category successfully"
+
 }
 
 module.exports = new Messages

@@ -1,55 +1,21 @@
 const Category = require("../models/Category");
 const responeObject = require("../models/responeObject");
+const CategoryService = require("../services/CategoryService")
+const Response = require("../response/Response")
 
 const resObj = new responeObject("", "", {});
 
 class CategoryControllers {
-  // Lấy tất cả category
+
   async getAllCategory(req, res) {
-    try {
-      const data = await Category.aggregate([
-        {
-          $addFields: {
-            field: {
-              $toObjectId: '$field'
-            }
-          }
-        },
-        {
-          $lookup: {
-            from: 'fields',
-            localField: 'field',
-            foreignField: '_id',
-            as: 'field'
-          }
-        },
-        {
-          $unwind: '$field'
-        },
-        {
-          $group: {
-            _id: '$field.name',
-            categories: { $push: '$$ROOT' }
-          }
-        }
-      ]);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Found category successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when get data";
-      resObj.data = "";
-      res.json(resObj);
-    }
+
+    const response = await CategoryService.getAll()
+
+    res.status(response.statusCode).json(new Response(
+      response.status,
+      response.message,
+      response.data
+    ))
   }
 
   // Lấy category theo id
@@ -79,7 +45,7 @@ class CategoryControllers {
   async addCategory(req, res) {
     try {
       const data = req.body
-      
+
       if (data) {
         data.images = req.file.path
         await Category.create(data)
@@ -105,15 +71,15 @@ class CategoryControllers {
   async updateCategory(req, res) {
     try {
       const id = req.params.id
-      const newCategory = {...req.body}
-      const filter = {_id: id}
+      const newCategory = { ...req.body }
+      const filter = { _id: id }
 
       const file = req.file
       if (file) {
         newCategory.images = file.path
       }
       const update = newCategory
-      const options = {new: true}
+      const options = { new: true }
 
       await Category.findByIdAndUpdate(filter, update, options).exec()
       resObj.status = "OK";
