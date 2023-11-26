@@ -85,8 +85,14 @@ class FlashSaleControllers {
       // Chuyen sang Dong Duong Cach 2
       let toDay = format(currentDate, 'yyyy-MM-dd', { timeZone: 'Asia/Ho_Chi_Minh' });
 
-      //console.log("toDay: ", currentDate, current_point_sale);
-      const flashSales = await FlashSale
+      console.log("toDay: ", toDay, current_point_sale);
+      const flashSales = await FlashSale .find(
+        {
+            $and: [
+              { date_sale: toDay },
+              { point_sale: current_point_sale },
+            ],}
+      )
 
       // tìm theo mức giảm
       .find(current_sale ? {current_sale: current_sale} : {})
@@ -108,12 +114,12 @@ class FlashSaleControllers {
         point_sale: point 
       } : {})
 
-      .find(filter == "expired" ? {
-        $and: [
-          { date_sale: toDay },
-          { point_sale: current_point_sale },
-        ],
-      } : {})
+      // .find(filter == "expired" ? {
+      //   $and: [
+      //     { date_sale: toDay },
+      //     { point_sale: current_point_sale },
+      //   ],
+      // } : {})
       .find(filter == "no-expired" ? {
         $or: [
     {
