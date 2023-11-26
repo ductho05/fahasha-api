@@ -1,501 +1,265 @@
-const User = require('../models/User')
-const responeObject = require('../models/responeObject')
-const { ConnectionStates } = require('mongoose')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const constants = require('../../constant/api.js')
-const nodemailer = require('nodemailer')
 const Validator = require("../validator/Validator")
 const UserService = require("../services/UserService")
-
-var resObj = new responeObject('', '', {})
+const Response = require("../response/Response")
+const Status = require("../utils/Status")
 
 class UserController {
 
-    async SendEmail(req, res) {
-        try {
-            const { email } = req.body
+    async verifyOTP(req, res) {
+
+        const { error, value } = Validator.emailValidator.validate(req.body)
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const email = value
             const otp = Math.floor(1000 + Math.random() * 1000000)
+            const subject = "Xác nhận mã OTP"
+            const html = `<div>Mã xác thực OTP <p style='font-size: 16px; color: red'; font-weight: 500;>${otp}</p></div>`
 
+            const response = await UserService.sendEmail(email, subject, html, otp)
 
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: 'fahashashopclone@gmail.com',
-                    pass: 'woycibkntohskmnz'
-                }
-            })
+            console.log(response)
 
-            const mainOptions = {
-                from: 'fahashashopclone@gmail.com',
-                to: email,
-                subject: 'Mã xác thực OTP',
-                html: `<div>Mã xác thực OTP <p style='font-size: 16px; color: red'; font-weight: 500;>${otp}</p></div>`
-            }
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
 
-            transporter.sendMail(mainOptions, (err, info) => {
-                if (err) {
-                    resObj.status = "Failure"
-                    resObj.message = err
-                    resObj.data = ''
-                    res.json(resObj)
-                } else {
-                    resObj.status = "OK"
-                    resObj.message = "Send email successfully"
-                    resObj.data = otp
-                    res.json(resObj)
-                }
-            })
+    }
 
-        } catch (err) {
-            resObj.status = "Failure"
-            resObj.message = err.message
-            resObj.data = ''
-            res.json(resObj)
+    async getProfile(req, res) {
+
+        const email = req.email
+
+        const response = await UserService.getProfileByEmail(email)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    async loginWithFacebook(req, res) {
+
+        const { error, value } = Validator.authFacebookValidator.validate(req.body)
+        const { email, username, image, faceId } = value
+
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.loginWithFacebook(email, username, image, faceId)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 
-    async getUserByToken(req, res) {
-        try {
-            const { token } = req.body
-            if (!token) {
-                resObj.status = "Failure"
-                resObj.message = 'token is valid'
-                resObj.data = ''
-                res.json(resObj)
-            } else {
-                const decoded = jwt.verify(token, constants.TOKEN_KEY)
+    async loginUser(req, res) {
 
-                const user = await User.findOne({ _id: decoded.user_id })
-                resObj.status = "OK"
-                resObj.message = "get user successfully"
-                resObj.data = user
-                res.json(resObj)
-            }
-        } catch (err) {
-            resObj.status = "Failure"
-            resObj.message = err.message
-            resObj.data = ''
-            res.json(resObj)
+        const { error, value } = Validator.authValidator.validate(req.body)
+        const { email, password } = value
+
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.login(email, password)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data,
+            ))
         }
     }
 
-    // Login with facebook
-    async LoginWithFacebook(req, res) {
-        try {
-            const { email, username, image, faceId } = req.body
-            const findUser = await User.findOne({ facebookId: faceId }).exec()
-            if (findUser) {
-                const token = jwt.sign(
-                    { user_id: findUser._id, email },
-                    constants.TOKEN_KEY,
-                    {
-                        expiresIn: "2h",
-                    }
-                )
+    async registerUser(req, res) {
 
-                resObj.status = "OK"
-                resObj.message = "Login Succsess"
-                resObj.data = findUser
-                resObj.token = token
-                res.json(resObj)
-            } else {
-                const user = new User({
-                    email: email,
-                    fullName: username,
-                    images: image,
-                    facebookId: faceId
-                })
+        const { error, value } = Validator.authValidator.validate(req.body)
+        const { email, password } = value
 
-                const token = jwt.sign(
-                    { user_id: user._id, email },
-                    constants.TOKEN_KEY,
-                    {
-                        expiresIn: "2h",
-                    }
-                )
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.register(email, password)
 
-                user.save()
-                resObj.status = "OK"
-                resObj.message = "Login Succsess"
-                resObj.data = user
-                resObj.token = token
-                res.json(resObj)
-            }
-
-        } catch (err) {
-            resObj.status = "Falure"
-            resObj.message = err?.message
-            resObj.data = {}
-            res.json(resObj)
-        } finally {
-            resObj = {}
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 
-    async LoginUser(req, res) {
+    async getAllUser(req, res) {
 
-        try {
-            const { error, value } = Validator.authValidator.validate(req.body)
-            const { email, password } = value
+        const page = req.query.page
+        const limit = req.query.limit
 
-            if (error) {
-                resObj.status = "Falure"
-                resObj.message = error.message
-                resObj.data = {}
-                res.status(400).json(resObj)
-            } else {
+        let response
+        response = page && limit ? await UserService.getAllPagination(page, limit)
+            : await UserService.getAll()
 
-                const response = UserService.Login(email, password)
-
-                console.log(response)
-
-                resObj.status = response.status
-                resObj.message = response.message
-                resObj.data = response.data
-                res.status(response.statusCode).json(resObj)
-
-                // const user = await User.findOne({ email: email })
-                // if (user && (await bcrypt.compare(password, user.password))) {
-                //     // Tạo Token
-                //     const token = jwt.sign(
-                //         { user_id: user._id, email },
-                //         constants.TOKEN_KEY,
-                //         {
-                //             expiresIn: "2h",
-                //         }
-                //     )
-
-                //     resObj.status = "OK"
-                //     resObj.message = "Login Succsess"
-                //     resObj.data = user
-                //     resObj.token = token
-                //     res.json(resObj)
-                // } else {
-                //     resObj.status = "OK"
-                //     resObj.message = "Email Or Password Not Matched"
-                //     resObj.data = {}
-                //     res.json(resObj)
-                // }
-            }
-
-        } catch (err) {
-            resObj.status = "Falure"
-            resObj.message = err.message
-            resObj.data = {}
-            res.status(500).json(resObj)
-        } finally {
-            resObj = {}
-        }
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
 
-    async RegisterUser(req, res) {
-
-        try {
-            const { email, password } = req.body
-            if (!(email && password)) {
-                resObj.status = "Falure"
-                resObj.message = "Invalid Input"
-                resObj.data = {}
-                res.json(resObj)
-            }
-
-            // Kiểm tra xem đã tồn tại user chưa?
-            const oldUser = await User.findOne({ 'email': email })
-            if (oldUser) {
-                resObj.status = "Falure"
-                resObj.message = "User is already"
-                resObj.data = {}
-                res.json(resObj)
-            }
-
-            // Tiến hành mã hóa mật khẩu
-            const encryptedPassword = await bcrypt.hash(password, 10);
-            const user = new User({
-                email: email.toLowerCase(),
-                password: encryptedPassword
-            })
-
-            // Tạo Token
-            const token = jwt.sign(
-                { user_id: user._id, email },
-                constants.TOKEN_KEY,
-                {
-                    expiresIn: "2h",
-                }
-            )
-
-            user.save()
-            resObj.status = "OK"
-            resObj.message = "Register Succsess"
-            resObj.data = user
-            resObj.token = token
-            res.json(resObj)
-        } catch (err) {
-            resObj.status = "Falure"
-            resObj.message = err.message
-            resObj.data = {}
-            res.json(resObj)
-        } finally {
-            resObj = {}
-        }
-    }
-
-    // Lấy danh sách User theo phân trang
-    async getAllUserPagination(req, res) {
-        const page = req.query.page || 1
-        const limit = req.query.limit || 10
-
-        try {
-            const userList = await User.find()
-                .sort({ updateAt: -1 })
-                .skip((page - 1) * limit)
-                .limit(limit)
-            resObj.status = "OK"
-            resObj.message = "Found Users by Paging successfully"
-            resObj.data = userList
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
-    }
-
-    // Lấy danh sách User theo thời gian tạo
     async getAllUserByTime(req, res) {
         const page = req.query.page
         const limit = req.query.limit
         const firstTime = req.query.ftime;
         const lastTime = req.query.ltime;
 
-        try {
-            const userList = await User.find({ createAt: { $gte: firstTime, $lte: lastTime } })
-                .sort({ updateAt: -1 })
-                .skip((page - 1) * limit)
-                .limit(limit)
+        const response = await UserService.getAllByTime(page, limit, firstTime, lastTime)
 
-            resObj.status = "OK"
-            resObj.message = "Found Users by time successfully"
-            resObj.data = userList
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
 
-    // Lấy danh sách User theo tên
     async getAllUserByName(req, res) {
         const name = req.query.name
-        const page = req.query.page
-        const limit = req.query.limit
+        const page = req.query.page || 1
+        const limit = req.query.limit || 10
 
-        try {
-            const userList = await User.find({ $text: { $search: name, $caseSensitive: false, $diacriticSensitive: false } })
-                .sort({ updatedAt: -1 })
-                .skip((page - 1) * limit)
-                .limit(limit)
+        const response = await UserService.getAllByName(page, limit, name)
 
-            resObj.status = "Ok"
-            resObj.message = "Found Users by Name successfully"
-            resObj.data = userList
-
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
 
-    // Lấy tất cả Users
-    async getAllUsers(req, res) {
-        try {
-            const userList = await User.find().sort({ updatedAt: -1 }).exec()
-
-            resObj.status = "OK",
-                resObj.message = "Found User successfully !"
-            resObj.data = userList
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
-    }
-
-    // Lấy danh sách User theo id
     async getUserById(req, res) {
-        try {
-            var id = req.params.id
-            const user = await User.findOne({ '_id': id }).exec()
 
-            if (user) {
-                resObj.status = "OK"
-                resObj.message = "Found user successfully"
-                resObj.data = user
+        const { error, value } = Validator.idValidator.validate(req.params.id)
 
-                res.json(resObj)
-            } else {
-                resObj.status = "OK"
-                resObj.message = "Not found user"
-                resObj.data = ""
+        if (error) {
 
-                res.json(resObj)
-            }
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.getByField({ _id: value })
 
-            res.json(resObj)
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 
-    // Lấy danh sách User theo email
     async getUserByEmail(req, res) {
-        try {
-            var email = req.query.email
-            const user = await User.findOne({ 'email': email }).exec()
 
-            if (user) {
-                resObj.status = "OK"
-                resObj.message = "Found user successfully"
-                resObj.data = user
+        const { error, value } = Validator.emailValidator.validate(req.query.email)
 
-                res.status(200)
-                res.json(resObj)
-            } else {
-                resObj.status = "OK"
-                resObj.message = "Not found user"
-                resObj.data = {}
+        if (error) {
 
-                res.status(404)
-                res.json(resObj)
-            }
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.getByField({ email: value })
 
-            res.status(500)
-            res.json(resObj)
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 
-    // Thêm User 
     async insertUser(req, res) {
-        try {
-            const user = new User({ ...req.body })
-            const file = req.file
-            if (file) {
-                user.images = file.path
-            }
-            if (user.password.trim() == "" || user.email.trim() == "") {
-                resObj.status = "Failed"
-                resObj.message = "Records is null"
-                resObj.data = ""
 
-                res.status(200)
-                res.json(resObj)
-            }
+        const { error, value } = Validator.userValidator.validate(req.body)
+        const file = req.file
 
-            else {
-                resObj.status = "OK"
-                resObj.message = "Insert user successfully"
-                resObj.data = user
+        if (file) {
+            value.images = file.path
+        }
 
-                user.save()
-                res.json(resObj)
-            }
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.insert(value)
 
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-
-            res.status(500)
-            res.json(resObj)
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
         }
     }
 
-    // Xóa User
     async removeUser(req, res) {
-        try {
-            const id = req.params.id;
-            const user = await User.findByIdAndRemove({ _id: id }).exec()
 
-            if (user) {
-                resObj.status = "OK"
-                resObj.message = "Remove user successfully"
-                resObj.data = `user id: ${id}`
-                res.status(200)
-                res.json(resObj)
-            } else {
-                resObj.status = "Failed"
-                resObj.message = "Not found user"
-                resObj.data = ""
+        const { error, value } = Validator.idValidator.validate(req.params.id)
 
-                res.status(404)
-                res.json(resObj)
-            }
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.delete(value)
 
-            res.status(500)
-            res.json(resObj)
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
         }
     }
 
-    // Cập nhật User 
     async updateUser(req, res) {
-        try {
-            const id = req.params.id
-            const newUser = { ...req.body }
-            const filter = { _id: id }
-            const file = req.file
-            if (file) {
-                newUser.images = file.path
-            }
-            if (newUser.password) {
-                const encryptedPassword = await bcrypt.hash(newUser.password, 10);
-                newUser.password = encryptedPassword
-            }
-            const update = newUser
-            const options = { new: true }
-            await User.findByIdAndUpdate(filter, update, options).exec()
 
-            resObj.status = "OK"
-            resObj.message = "Update User successfully"
-            resObj.data = newUser
+        const id = req.params.id
+        const { error, value } = Validator.userUpdateValidator.validate(req.body)
 
-            res.status(200)
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
+        const file = req.file
+        if (file) {
+            value.images = file.path
+        }
 
-            res.status(500)
-            res.json(resObj)
+        if (error) {
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+            const response = await UserService.update({ _id: id }, value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
         }
     }
 }

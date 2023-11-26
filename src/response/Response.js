@@ -1,5 +1,5 @@
 
-class responeObject {
+class Response {
     constructor(status, message, data) {
         this.status = status
         this.message = message
@@ -7,4 +7,4 @@ class responeObject {
     }
 }
 
-module.exports = responeObject
+module.exports = Response

@@ -5,7 +5,7 @@ const UserNotification = require('../models/UserNotification');
 const webpush = require('web-push')
 const User = require('../models/User')
 const jwt = require('jsonwebtoken')
-const constants = require('../../constant/api.js')
+const constants = require('../utils/api.js')
 const socket = require('../io')
 
 const resObj = new responeObject("", "", {});
