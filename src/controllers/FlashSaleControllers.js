@@ -32,7 +32,7 @@ class FlashSaleControllers {
       }
     } catch (err) {
       resObj.status = "Failed";
-      resObj.message = Error get data. Error: ${err};
+      resObj.message = `Error get data. Error: ${err}`;
       resObj.data = {};
       return res.json(resObj);
     }
