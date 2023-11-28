@@ -16,6 +16,6 @@ router.post("/register", userController.RegisterUser)
 router.post("/login", userController.LoginUser)
 router.post("/login/facebook", userController.LoginWithFacebook)
 router.post("/sendotp", userController.SendEmail)
-router.post("/profile", userController.getUserByToken)
+router.post("/get/profile", userController.getUserByToken)
 
 module.exports = router
