@@ -1,270 +1,123 @@
-const Evaluate = require("../models/Evaluate")
-const Product = require("../models/Product")
-const responeObject = require("../models/responeObject")
-const mongoose = require("mongoose")
+const EvaluateService = require("../services/EvaluateService")
+const Response = require("../response/Response")
+const Validator = require("../validator/Validator")
+const Status = require("../utils/Status")
 
-var resObj = new responeObject("", "", {})
 class EvaluateController {
 
     async getAllComment(req, res) {
-        try {
-            const reviews = await Evaluate.find()
-                .populate("product")
-                .populate("user")
-                .sort({ createdAt: -1 }).exec()
-            resObj.status = "OK"
-            resObj.message = "Get all comments successfully"
-            resObj.data = reviews
-            res.json(resObj)
-        } catch (err) {
-            resObj.status = "Failed"
-            resObj.message = err.message
-            resObj.data = {}
-            res.json(resObj)
-        }
+
+        const response = await EvaluateService.getAll()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
 
     async likeComment(req, res) {
-        try {
-            const { commentId, userId } = req.body
-            if (commentId && userId) {
-                const comment = await Evaluate.findOne({ _id: commentId }).exec()
-                if (comment) {
-                    const likes = comment?.likes || []
-                    const foundLike = likes.find(l => l == userId)
-                    if (foundLike) {
-                        const newLikes = likes.filter(l => l != userId)
-                        comment.likes = [...newLikes]
-                    } else {
-                        likes.push(userId)
-                        comment.likes = [...likes]
-                    }
-                    comment.save()
-                    resObj.status = "Ok"
-                    resObj.message = "Like/Dislikes comment success"
-                    resObj.data = comment
-                    res.json(resObj)
-                } else {
-                    resObj.status = "Failed"
-                    resObj.message = "Not found comment"
-                    resObj.data = {}
-                    res.json(resObj)
-                }
-            } else {
-                resObj.status = "Failed"
-                resObj.message = "Comment Id or User Id Null"
-                resObj.data = {}
-                res.json(resObj)
-            }
-        } catch (err) {
-            resObj.status = "Failed"
-            resObj.message = err.message
-            resObj.data = {}
-            res.json(resObj)
+
+        const email = req.email
+        const { error, value } = Validator.idValidator.validate(req.query.id)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await EvaluateService.like(email, value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 
     async getCountEvaluateByProductId(req, res) {
-        try {
-            const id = req.query._id
-            Promise.all([
-                Evaluate.count({
-                    product: id
-                }),
-                Evaluate.count({
-                    product: id,
-                    rate: 1
-                }),
-                Evaluate.count({
-                    product: id,
-                    rate: 2
-                }),
-                Evaluate.count({
-                    product: id,
-                    rate: 3
-                }),
-                Evaluate.count({
-                    product: id,
-                    rate: 4
-                }),
-                Evaluate.count({
-                    product: id,
-                    rate: 5
-                })
-            ]).then((result) => {
-                const evaluates = {
-                    total: result.shift(),
-                    rate: [...result]
-                }
-                resObj.status = "OK",
-                    resObj.message = "Count evaluate successfully !"
-                resObj.data = evaluates
-                res.status(200)
-                res.json(resObj)
-            })
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
+
+        const { error, value } = Validator.idValidator.validate(req.query._id)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await EvaluateService.countByProductId(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 
     async getEvaluateByUser(req, res) {
-        try {
-            const id = req.query.user
-            const evaluate = await Evaluate.find({ user: id }).populate({
-                path: "product",
-                populate: {
-                    path: "categoryId",
-                    model: "Category",
-                },
-            }).sort({ createdAt: -1 }).exec()
-            if (evaluate) {
-                resObj.status = "OK",
-                    resObj.message = "Found evaluate successfully !"
-                resObj.data = evaluate
-                res.status(200)
-                res.json(resObj)
-            } else {
-                resObj.status = "OK",
-                    resObj.message = "No evaluate"
-                resObj.data = evaluate
-                res.status(200)
-                res.json(resObj)
-            }
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
+
+        const { error, value } = Validator.idValidator.validate(req.query.user)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await EvaluateService.getByUser(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
+
     }
 
     async getEvaluateByProductId(req, res) {
-        try {
-            var id = req.query._id
-            var sort = req.query.sort
-            let typeSort = -1
-            if (sort) {
-                if (sort === 'desc') {
-                    typeSort = 1
-                }
-                const findId = new mongoose.Types.ObjectId(id)
-                Evaluate.aggregate([
-                    {
-                        $match: { product: findId }
-                    },
-                    {
-                        $lookup: {
-                            from: "users",
-                            localField: "user",
-                            foreignField: "_id",
-                            as: "user"
-                        }
-                    },
-                    {
-                        $unwind: "$user"
-                    },
-                    {
-                        $project: {
-                            rate: 1,
-                            comment: 1,
-                            product: 1,
-                            user: 1,
-                            likes: 1,
-                            updatedAt: 1,
-                            likeCount: { $size: '$likes' }
-                        }
-                    },
-                    {
-                        $sort: { likeCount: typeSort }
-                    }
-                ])
-                    .then((results) => {
-                        resObj.status = "OK"
-                        resObj.message = "Found evaluate successfully !"
-                        resObj.data = results
-                        res.status(200)
-                        res.json(resObj)
-                    })
-                    .catch(err => {
-                        resObj.status = "Failed"
-                        resObj.message = err.message
-                        resObj.data = ""
-                        res.status(500)
-                        res.json(resObj)
-                    })
-            } else {
-                const evaluate = await Evaluate.find({ product: id }).populate("user").populate({
-                    path: "product",
-                    populate: {
-                        path: "categoryId",
-                        model: "Category",
-                    },
-                }).sort({ updatedAt: -1 }).exec()
-                if (evaluate) {
-                    resObj.status = "OK",
-                        resObj.message = "Found evaluate successfully !"
-                    resObj.data = evaluate
-                    res.status(200)
-                    res.json(resObj)
-                } else {
-                    resObj.status = "OK",
-                        resObj.message = "No evaluate"
-                    resObj.data = evaluate
-                    res.status(200)
-                    res.json(resObj)
-                }
-            }
 
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-            res.status(500)
-            res.json(resObj)
-        }
+        var id = req.query._id
+        var sort = req.query.sort
+        let typeSort = -1
+
+        const response = await EvaluateService.getByProduct(id, sort, typeSort)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+
     }
 
     async insertEvaluate(req, res) {
-        try {
-            const evaluate = new Evaluate({ ...req.body })
+        const { error, value } = Validator.evaluateValidator.validate(req.body)
 
-            if (evaluate) {
-                if (evaluate.rate == null) {
-                    resObj.status = "Failed"
-                    resObj.message = "Records is null"
-                    resObj.data = ""
+        if (error) {
 
-                    res.json(resObj)
-                } else {
-                    const product = await Product.findOne({ _id: evaluate.product }).exec()
-                    evaluate.product = product
-                    resObj.status = "OK"
-                    resObj.message = "Insert evaluate successfully"
-                    resObj.data = evaluate
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
 
-                    evaluate.save()
-                    res.json(resObj)
-                }
-            } else {
-                resObj.status = "Failed"
-                resObj.message = "null data"
-                resObj.data = ""
+            const response = await EvaluateService.insert(value)
 
-                res.json(resObj)
-            }
-
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = error.message
-            resObj.data = ""
-
-            res.status(500)
-            res.json(resObj)
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 }

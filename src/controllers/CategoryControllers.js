@@ -1,11 +1,7 @@
-const Category = require("../models/Category");
-const responeObject = require("../models/responeObject");
 const CategoryService = require("../services/CategoryService")
 const Response = require("../response/Response")
 const Validator = require("../validator/Validator")
 const Status = require("../utils/Status")
-
-const resObj = new responeObject("", "", {});
 
 class CategoryControllers {
 
@@ -66,7 +62,7 @@ class CategoryControllers {
     async updateCategory(req, res) {
 
         const id = req.params.id
-        const { error, value } = Validator.categoryUpdateValidator.validate(re.body)
+        const { error, value } = Validator.categoryUpdateValidator.validate(req.body)
 
         if (error) {
 
@@ -76,7 +72,7 @@ class CategoryControllers {
             ))
         } else {
 
-            const response = CategoryService.update({ _id: id }, value)
+            const response = await CategoryService.update({ _id: id }, value)
 
             return res.status(response.statusCode).json(new Response(
                 response.status,

@@ -33,6 +33,8 @@ class Messages {
 
     INSERT_USER_SUCCESS = "Insert user successfully"
 
+    INSERT_EVALUATE_SUCCESS = "Insert evaluate successfully"
+
     REMOVE_USER_SUCCESS = "Remove user successfully"
 
     UPDATE_USER_SUCCESS = "Update user successfully"
@@ -46,6 +48,20 @@ class Messages {
     INSERT_CATEGORY_SUCCESS = "Insert category successfully"
 
     UPDATE_CATEGORY_SUCCESS = "Update category successfully"
+
+    GET_COMMENT_SUCCESS = "Get comment successfully"
+
+    GET_DATA_SUCCESS = "Get data successfully"
+
+    GET_DATA_ERROR = "Get data error"
+
+    LIKE_OR_QUIT_LIKE_SUCCESS = "Like or quit like successfully"
+
+    NOT_FOUND_PRODUCT = "Not found product"
+
+    PUSH_SUBSCRIPTION_SUCCESS = "Push subscription success"
+
+    SEND_NOTICE_SUCCESS = "Send notification successfully"
 
 }
 

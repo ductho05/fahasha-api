@@ -1,4 +1,4 @@
-const Category = require("../models/Category");
+const Category = require("../models/Category")
 const ServiceResponse = require("../response/ServiceResponse")
 const Status = require("../utils/Status")
 const Messages = require("../utils/Messages")

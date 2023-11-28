@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const authentication = require("../middleware/Authentication")
+const auhthorization = require("../middleware/Authorization")
 
 const constants = require('../utils/api.js')
 // // local
@@ -27,18 +28,18 @@ let config =
 
 const orderControllers = require("../controllers/OrderControllers")
 
-router.get("/", orderControllers.getAllOrders)
-router.get("/id/:id", orderControllers.getOrderById)
-router.post("/insert", orderControllers.insertOrder)
-router.delete("/delete/:id", orderControllers.removeOrder)
-router.put("/update/:id", orderControllers.updateOrder)
-router.post("/search", orderControllers.getAllOrderByName)
-router.post("/filter/time", orderControllers.getAllOrderByTime)
-router.post("/", orderControllers.getAllOrderPaginaion)
-router.post("/filter", orderControllers.getAllOrderByStatus)
-router.post("/filter/time", orderControllers.getAllOrderByTime)
-router.get("/status", orderControllers.getTotalOrderByStatus)
-router.post("/user", orderControllers.getAllOrderByUser)
+router.get("/", auhthorization, orderControllers.getAllOrders)
+router.get("/id/:id", authentication, orderControllers.getOrderById)
+router.post("/insert", authentication, orderControllers.insertOrder)
+router.delete("/delete/:id", auhthorization, orderControllers.removeOrder)
+router.put("/update/:id", authentication, orderControllers.updateOrder)
+router.post("/search", authentication, orderControllers.getAllOrderByName)
+router.post("/filter/time", authentication, orderControllers.getAllOrderByTime)
+router.post("/", auhthorization, orderControllers.getAllOrderPaginaion)
+router.post("/filter", authentication, orderControllers.getAllOrderByStatus)
+router.post("/filter/time", authentication, orderControllers.getAllOrderByTime)
+router.get("/status", authentication, orderControllers.getTotalOrderByStatus)
+router.post("/user", authentication, orderControllers.getAllOrderByUser)
 
 
 // router.get('/', function(req, res, next){

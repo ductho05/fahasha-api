@@ -67,6 +67,21 @@ class Validator {
         status: Joi.string().valid("Hoạt động", "Không hoạt động"),
         field: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24,}$/))
     })
+
+    evaluateValidator = Joi.object({
+        comment: Joi.string().trim().min(1).required(),
+        rate: Joi.number().min(1).max(5).required(),
+        product: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)).required(),
+        user: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)).required()
+    })
+
+    notificationValidator = Joi.object({
+        title: Joi.string().trim().min(1).required(),
+        description: Joi.string().trim().min(1).required(),
+        image: Joi.string().pattern(new RegExp(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/)).required(),
+        url: Joi.string().pattern(new RegExp(/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}/)).required(),
+        user: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/))
+    })
 }
 
 module.exports = new Validator

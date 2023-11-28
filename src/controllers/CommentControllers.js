@@ -1,108 +1,52 @@
-const Comment = require("../models/Comment");
-const responeObject = require("../models/responeObject");
-
-const resObj = new responeObject("", "", {});
+const CommentService = require("../services/CommentService")
+const Response = require("../response/Response")
+const Validator = require("../validator/Validator")
+const Status = require("../utils/Status")
 
 class CommentControllers {
-  async getAllComment(req, res) {
-    var rate = req.query.rate;
-    var productId = req.query.productId;
-    var page = req.query.page;
-    var perPage = req.query.perPage;
-    var sort = req.query.sort;
-    var skip = (page - 1) * perPage;
-    var limit = perPage * 1;
 
-    try {
-      const data = await Comment.find(productId ?
-         { productId: productId } : {}).find(rate ? { rate: rate } : {})
-        .sort(sort ? { createdAt: sort } : {}).skip(skip).limit(limit).exec();
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Found comment successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when get data";
-      resObj.data = "";
-      res.json(resObj);
-    }
-  }
+    async getAllComment(req, res) {
 
-  async getCommentById(req, res) {
-    try {
-      const data = await Comment.findById(req.params.id);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Found comment successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when get data";
-      resObj.data = "";
-      res.json(resObj);
-    }
-  }
+        const rate = req.query.rate;
+        const productId = req.query.productId;
+        const page = req.query.page;
+        const perPage = req.query.perPage;
+        const sort = req.query.sort;
+        const skip = (page - 1) * perPage;
+        const limit = perPage * 1;
 
-  async addComment(req, res) {
-    try {
-      const data = req.body
-      if (data) {
-        await Comment.create(data)
-        resObj.status = "OK";
-        resObj.message = "Add comment successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when add data";
-      resObj.data = "";
-      res.json(resObj);
-    }
-  }
+        const response = await CommentService.getAll(rate, productId, sort, skip, limit)
 
-  // Xóa comment, ẩn đi
-  async deleteComment(req, res) {
-    try {
-      const data = await Comment.findByIdAndDelete(req.params.id);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Delete comment successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when delete data";
-      resObj.data = "";
-      res.json(resObj);
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+
     }
-  }
+
+    async getCommentById(req, res) {
+
+        const { error, value } = Validator.idValidator.validate(req.params.id)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await CommentService.getByField({ _id: value })
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
+    }
+
 }
 
 module.exports = new CommentControllers();

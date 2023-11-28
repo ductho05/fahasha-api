@@ -1,11 +1,12 @@
 const express = require("express")
 const router = express.Router()
 const NotificationControllers = require('../controllers/NotificationControllers')
+const authentication = require("../middleware/Authentication")
+const auhthorization = require("../middleware/Authorization")
 
-router.post("/subscription", NotificationControllers.handlePushNotificationSubcription)
-router.post("/send", NotificationControllers.sendPushNotification)
-router.post("/get", NotificationControllers.getAllNotificationsByUser)
-router.post("/update", NotificationControllers.updateUserNotification)
-router.get("/get-all", NotificationControllers.getAllNotifications)
+router.post("/subscription", authentication, NotificationControllers.handlePushNotificationSubcription)
+router.post("/send", authentication, NotificationControllers.sendPushNotification)
+router.post("/get", authentication, NotificationControllers.getAllNotificationsByUser)
+router.get("/get-all", auhthorization, NotificationControllers.getAllNotifications)
 
 module.exports = router
