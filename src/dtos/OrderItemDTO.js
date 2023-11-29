@@ -26,13 +26,13 @@ class OrderItemDTO {
 
         } = orderItem
 
-        if (Object.keys(order).length > 0) {
+        if (order && typeof order != 'string') {
 
             const orderDTO = OrderDTO.mapToOrderDTO(order)
             order = { ...orderDTO }
         }
 
-        if (Object.keys(product).length > 0) {
+        if (product && typeof product != 'string') {
 
             const productDTO = ProductDTO.mapToProductDTO(product)
             product = { ...productDTO }

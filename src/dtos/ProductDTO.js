@@ -38,7 +38,7 @@ class ProductDTO {
             quantity
         } = product
 
-        if (Object.keys(categoryId).length > 0) {
+        if (categoryId && typeof categoryId != 'string') {
             categoryId = {
                 _id: categoryId._id,
                 name: categoryId.name

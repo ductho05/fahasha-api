@@ -32,14 +32,14 @@ class EvaluateDTO {
             createdAt = `${timeString} ${dateString}`;
         }
 
-        if (Object.keys(user).length > 0) {
+        if (user && typeof user != 'string') {
             user = {
                 images: user.images,
                 fullName: user.fullName
             }
         }
 
-        if (Object.keys(product).length > 0) {
+        if (product && typeof product != 'string') {
             product = {
                 images: product.images,
                 title: product.title

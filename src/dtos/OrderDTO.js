@@ -55,7 +55,7 @@ class OrderDTO {
             createdAt = `${timeString} ${dateString}`;
         }
 
-        if (Object.keys(user).length > 0) {
+        if (user && typeof user != 'string') {
             user = {
                 images: user.images,
                 fullName: user.fullName

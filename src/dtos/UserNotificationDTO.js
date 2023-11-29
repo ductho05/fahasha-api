@@ -28,14 +28,14 @@ class UserNotificationDTO {
             createdAt = `${timeString} ${dateString}`;
         }
 
-        if (Object.keys(user).length > 0) {
+        if (user && typeof user != 'string') {
             user = {
                 images: user.images,
                 fullName: user.fullName
             }
         }
 
-        if (Object.keys(notification).length > 0) {
+        if (notification && typeof notification != 'string') {
             notification = {
                 title: notification.title,
                 description: notification.description,
