@@ -1,386 +1,222 @@
-const Order = require("../models/Order");
-const responeObject = require("../models/responeObject");
+const Response = require("../response/Response");
+const OrderService = require("../services/OrderService");
+const Status = require("../utils/Status");
+const Validator = require("../validator/Validator")
 
-var resObj = new responeObject("", "", {});
 class OrderController {
 
-  async getAllOrderByUser(req, res) {
-    try {
-      const { user } = req.body
-      if (user) {
-        const listOrder = await Order.find({ user: user })
-          .sort({ updatedAt: -1 })
-          .limit(10)
-          .exec()
-        resObj.status = "OK"
-        resObj.message = "Found orders successfully"
-        resObj.data = listOrder
-        res.json(resObj)
-      } else {
-        resObj.status = "Error"
-        resObj.message = "user is empty"
-        resObj.data = []
-        res.json(resObj)
-      }
-    } catch (err) {
-      resObj.status = "Error"
-      resObj.message = err.message
-      resObj.data = []
-      res.json(resObj)
+    async getAllOrderByUser(req, res) {
+
+        const { error, value } = Validator.idValidator.validate(req.body.user)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderService.getByUser(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
     }
-  }
 
-  // Lấy tổng số lượng đơn hàng theo cả 5 trạng thái
+    // Lấy tổng số lượng đơn hàng theo cả 5 trạng thái
+    async getTotalOrderByStatus(req, res) {
 
-  async getTotalOrderByStatus(req, res) {
-    try {
-      const total = await Order.aggregate([
-        {
-          $group: {
-            status: "DAGIAO",
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { count: -1 } },
-      ]);
-      resObj.status = "OK";
-      resObj.message = "Found orders successfully";
-      resObj.data = total;
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+        const response = await OrderService.getTotalbyStatus()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
+    // Lấy đơn hàng theo trạng thái đơn hàng
+    async getAllOrderByStatus(req, res) {
 
-  // Lấy đơn hàng theo trạng thái đơn hàng
-  async getAllOrderByStatus(req, res) {
-    const page = req.query.page;
-    const limit = req.query.limit;
-    const status = req.query.status;
-    const user = req.query.user;
+        const page = req.query.page;
+        const limit = req.query.limit;
+        const status = req.query.status;
+        const user = req.query.user;
 
+        const response = await OrderService.getAllByUser(page, limit, status, user)
 
-
-    try {
-      if (user) {
-        const orderList = await Order.find({ user: user, status: new RegExp(status, "i") })
-          .populate("user")
-          .sort({ updatedAt: -1 })
-          .skip((page - 1) * limit)
-          .limit(limit);
-
-        resObj.status = "OK";
-        resObj.message = "Found orders successfully";
-        resObj.data = orderList;
-        res.status(200);
-        res.json(resObj);
-      } else {
-        const orderList = await Order.find({ status: new RegExp(status, "i") })
-          .populate("user")
-          .sort({ updatedAt: -1 })
-          .skip((page - 1) * limit)
-          .limit(limit);
-
-        resObj.status = "OK";
-        resObj.message = "Found orders successfully";
-        resObj.data = orderList;
-        res.status(200);
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  // Lấy đơn hàng theo phân trang
-  async getAllOrderPaginaion(req, res) {
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
-    const user = req.query.user
+    // Lấy đơn hàng theo phân trang
+    async getAllOrderPaginaion(req, res) {
 
-    try {
-      const orderList = await Order.find({ user: user })
-        .sort({ updatedAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
-      resObj.status = "OK";
-      resObj.message = "Found orders successfully";
-      resObj.data = orderList;
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 10;
+        const user = req.query.user
+
+        const response = await OrderService.getAllByUserPagination(page, limit, user)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  // Lấy tất cả đơn hàng theo thời gian tạo đơn hàng
-  async getAllOrderByTime(req, res) {
-    const page = req.query.page;
-    const limit = req.query.limit;
-    const firstTime = req.query.ftime;
-    const lastTime = req.query.ltime;
-    try {
-      const orderList = await Order.find({
-        createdAt: { $gte: firstTime, $lte: lastTime },
-      })
-        .sort({ updatedAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
+    // Lấy tất cả đơn hàng theo thời gian tạo đơn hàng
+    async getAllOrderByTime(req, res) {
+        const page = req.query.page;
+        const limit = req.query.limit;
+        const firstTime = req.query.ftime;
+        const lastTime = req.query.ltime;
 
-      resObj.status = "OK";
-      resObj.message = "Found orders successfully";
-      resObj.data = orderList;
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+        const response = await OrderService.getAllByTime(page, limit, firstTime, lastTime)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  // Tìm kiếm đơn hàng theo tên
-  async getAllOrderByName(req, res) {
-    const name = req.query.name;
-    const page = req.query.page;
-    const limit = req.query.limit;
+    // Tìm kiếm đơn hàng theo tên
+    async getAllOrderByName(req, res) {
+        const name = req.query.name;
+        const page = req.query.page;
+        const limit = req.query.limit;
 
-    try {
-      const orderList = await Order.find({
-        $text: {
-          $search: name,
-          $caseSensitive: false,
-          $diacriticSensitive: false,
-        },
-      })
-        .sort({ updatedAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
+        const response = await OrderService.getAllByName(page, limit, name)
 
-      resObj.status = "Ok";
-      resObj.message = "Found orders successfully";
-      resObj.data = orderList;
-
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  // // Lấy tất cả các đơn hàng
-  // async getAllOrders(req, res) {
-  //     var page = req.query.page;
-  //     var limit = req.query.limit;
-  //     var status = req.query.status;
-  //     var name = req.query.name;
-  //     var firstTime = req.query.ftime;
-  //     var lastTime = req.query.ltime;
-  //     var sort = req.query.sort;
-  //     var user = req.query.user;
-  //     try {
-  //       const data = await Order.find(
-  //         status ? { status: new RegExp(status, "i") } : {}
-  //       )
-  //         .find(user ? { user: user } : {})
-  //         .sort(sort ? { updatedAt: sort } : {}).populate("user").exec();
+    // Lấy tất cả các đơn hàng
+    async getAllOrders(req, res) {
 
-  //       if (data) {
-  //         resObj.status = "OK";
-  //         resObj.message = "Found product successfully";
-  //         resObj.data = data;
-  //         res.json(resObj);
-  //       } else {
-  //         resObj.status = "Failed";
-  //         resObj.message = "Not found data";
-  //         resObj.data = "";
-  //         res.json(resObj);
-  //       }
-  //     } catch (err) {
-  //       resObj.status = "Failed";
-  //       resObj.message = "Error when get data" + err;
-  //       resObj.data = "";
-  //       res.json(resObj);
-  //     }
-  //   }
+        var page = req.query.page;
+        var limit = req.query.limit;
+        var status = req.query.status;
+        var name = req.query.name;
+        var firstTime = req.query.ftime;
+        var lastTime = req.query.ltime;
+        var sort = req.query.sort;
+        var user = req.query.user;
 
-  // Lấy tất cả các đơn hàng
-  async getAllOrders(req, res) {
-    var page = req.query.page;
-    var limit = req.query.limit;
-    var status = req.query.status;
-    var name = req.query.name;
-    var firstTime = req.query.ftime;
-    var lastTime = req.query.ltime;
-    var sort = req.query.sort;
-    var user = req.query.user;
-    try {
-      const data = await Order.find(
-        status ? { status: new RegExp(status, "i") } : {}
-      )
-        .find(user ? { user: user } : {})
-        .sort(sort ? { updatedAt: sort } : {}).limit(limit).populate("user").exec();
+        const response = await OrderService.getAll(page, limit, name, status, sort, user)
 
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Found product successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when get data" + err;
-      resObj.data = "";
-      res.json(resObj);
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  // Lấy 1 đơn hàng theo id
-  async getOrderById(req, res) {
-    try {
-      var id = req.params.id;
-      const order = await Order.findOne({ _id: id }).exec();
+    // Lấy 1 đơn hàng theo id
+    async getOrderById(req, res) {
 
-      if (order) {
-        resObj.status = "OK";
-        resObj.message = "Found order successfully";
-        resObj.data = order;
+        const { error, value } = Validator.idValidator.validate(req.params.id)
 
-        res.status(200);
-        res.json(resObj);
-      } else {
-        resObj.status = "OK";
-        resObj.message = "Not found order";
-        resObj.data = "";
+        if (error) {
 
-        res.status(404);
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
 
-      res.status(500);
-      res.json(resObj);
+            const response = await OrderService.getById(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
+
     }
-  }
 
-  // Thêm mới 1 đơn hàng
-  async insertOrder(req, res) {
-    try {
-      const order = new Order({ ...req.body });
-      if (
-        order.address.trim() == "" ||
-        order.city.trim() == "" ||
-        order.name.trim() == "" ||
-        order.phone.trim() == "" ||
-        order.quantity == "" ||
-        order.price == ""
-      ) {
-        resObj.status = "Failed";
-        resObj.message = "Records is null";
-        resObj.data = "";
+    // Thêm mới 1 đơn hàng
+    async insertOrder(req, res) {
 
-        res.json(resObj);
-      } else {
-        resObj.status = "OK";
-        resObj.message = "Insert order successfully";
-        resObj.data = order;
+        const { error, value } = Validator.orderValidator.validate(req.body)
 
-        order.save();
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+        if (error) {
 
-      res.status(500);
-      res.json(resObj);
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderService.insert(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
     }
-  }
 
-  // Xóa một đơn hàng
-  async removeOrder(req, res) {
-    try {
-      const id = req.params.id;
-      const order = await Order.findByIdAndRemove({ _id: id }).exec();
+    // Xóa một đơn hàng
+    async removeOrder(req, res) {
 
-      if (order) {
-        resObj.status = "OK";
-        resObj.message = "Remove order successfully";
-        resObj.data = `order id: ${id}`;
-        res.status(200);
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found order";
-        resObj.data = "";
+        const { error, value } = Validator.idValidator.validate(req.params.id)
 
-        res.status(404);
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+        if (error) {
 
-      res.status(500);
-      res.json(resObj);
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderService.delete(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
     }
-  }
 
-  // Cập nhật một đơn hàng
-  async updateOrder(req, res) {
-    try {
-      const id = req.params.id;
-      const newOrder = { ...req.body };
-      const filter = { _id: id };
-      const update = newOrder;
-      const options = { new: true };
-      const order = await Order.findByIdAndUpdate(filter, update, options).exec();
+    // Cập nhật một đơn hàng
+    async updateOrder(req, res) {
 
-      resObj.status = "OK";
-      resObj.message = "Update successfully";
-      resObj.data = order;
+        const id = req.params.id
+        const { error, value } = Validator.orderUpdateValidator.validate(req.body)
 
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+        if (error) {
 
-      res.status(500);
-      res.json(resObj);
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderService.update(id, value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
     }
-  }
 }
 
 module.exports = new OrderController();

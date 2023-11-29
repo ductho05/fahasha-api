@@ -1,670 +1,309 @@
-const { Int, Float } = require("mssql");
-const Product = require("../models/Product");
-const Category = require("../models/Category");
-const responeObject = require("../models/responeObject");
-
-const resObj = new responeObject("", "", {});
+const Response = require("../response/Response");
+const ProductService = require("../services/ProductService");
+const Status = require("../utils/Status");
+const Validator = require("../validator/Validator")
 
 class ProductControllers {
-  // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
-  async getAllProduct(req, res) {
-    // Category
-    var category = req.query.category;
 
-    // Tên sách
-    var title = req.query.title;
-    // Lấy num sản phẩm thôi
-    var num = req.query.num;
+    async getAllProduct(req, res) {
 
-    // Số trang
-    var page = parseInt(req.query.page);
-    // Số sản phẩm trên 1 trang
-    var perPage = parseInt(req.query.perPage);
-    // Tính số sản phẩm bỏ qua
-    var start = (page - 1) * perPage;
-    // Tính số sản phẩm lấy ra
-    var end = perPage ? perPage : num;
+        var category = req.query.category;
 
-    // Sắp xếp
-    var sort = req.query.sort;
+        // Tên sách
+        var title = req.query.title;
+        // Lấy num sản phẩm thôi
+        var num = req.query.num;
 
-    // Sắp xếp theo trường nào đó
-    var filter = req.query.filter;
+        // Số trang
+        var page = parseInt(req.query.page);
+        // Số sản phẩm trên 1 trang
+        var perPage = parseInt(req.query.perPage);
+        // Tính số sản phẩm bỏ qua
+        var start = (page - 1) * perPage;
+        // Tính số sản phẩm lấy ra
+        var end = perPage ? perPage : num;
 
+        // Sắp xếp
+        var sort = req.query.sort;
 
+        // Sắp xếp theo trường nào đó
+        var filter = req.query.filter;
 
-    try {
-      const data = await Product.find(category ? { categoryId: category } : {})
-        .find(title ? { title: new RegExp(title, "i") } : {})
-        .find({ images: { $ne: null } })
-        .populate("categoryId")
-        .skip(start)
-        .limit(end)
-        .sort({ "updatedAt": -1 })
-        .exec();
-      if (sort) {
-        if (filter == "price") {
-          data.sort(function (a, b) {
-            if (sort == "asc") {
-              return a.price - b.price;
-            }
-            if (sort == "desc") {
-              return b.price - a.price;
-            }
-          });
+        const response = await ProductService.getALL(category, title, num, start, end, sort, filter)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    async getCountProduct(req, res) {
+
+        const id = req.query.category
+
+        const response = await ProductService.count(id)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy 6 sản phẩm được bán chạy nhất
+    async getProductBestSellerLimit(req, res) {
+
+        const response = await ProductService.getBestSellerLimit()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy dữ liệu sách theo id
+    async getProductById(req, res) {
+
+        const { error, value } = Validator.idValidator.validate(req.params.id)
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await ProductService.getById(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
-        if (filter == "sold") {
-          data.sort(function (a, b) {
-            if (sort == "asc") {
-              return a.sold - b.sold;
-            }
-            if (sort == "desc") {
-              return b.sold - a.sold;
-            }
-          });
+    }
+
+    // Tìm 5 category co nhiều sản phẩm nhất
+    async getNumProductByCategory(req, res) {
+
+        const response = await ProductService.countByCategory()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+
+    // Tìm tổng số sản phẩm có rate bằng 5
+    async getNumProductByRate(req, res) {
+
+        const response = await ProductService.countByRate()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy dữ liệu sách theo tên
+    async getProductByName(req, res) {
+
+        var title = req.params.title;
+        var num = parseInt(req.query.num) || 6;
+
+        const response = await ProductService.getByName(title, num)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy dữ liệu sách theo tác giả
+    async getProductByAuthor(req, res) {
+
+        var author = req.params.author
+
+        const response = await ProductService.getByAuthor(author)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy dữ liệu sách theo khoảng năm xuất bản
+    async getProductByYear(req, res) {
+
+        var start = req.params.start
+        var end = req.params.end
+
+        const response = await ProductService.getByYear(start, end)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy sách mới nhất
+    async getNewProduct(req, res) {
+
+        var num = parseInt(req.params.num) || 8
+
+        const response = await ProductService.getNew(num)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy sách rẻ nhất
+    async getLowestProduct(req, res) {
+
+        var num = parseInt(req.params.num) || 8
+
+        const response = await ProductService.getLowest(num)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy sách bán chạy nhất
+    async getBestSellerProduct(req, res) {
+
+        var num = parseInt(req.params.num) || 8
+
+        const response = await ProductService.getBestSale(num)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy dữ liệu sách theo khoảng giá và sắp xếp theo giá
+    async getProductByPrice(req, res) {
+
+        const start = req.params.start;
+        const end = req.params.end;
+        const sort = req.params.sort;
+
+        const response = await ProductService.getByPrice(start, end, sort)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    //Tìm các sách có tên danh mục là "Sách giáo khoa"
+    async getProductByCategoryName(req, res) {
+
+        const response = await ProductService.getByCategoryName()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Lấy sách theo danh mục
+    async getProductByCategory(req, res) {
+
+        var limit = req.query.limit || 0;
+        var id = req.query.category;
+
+        const response = await ProductService.getByCategory(id, limit)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
+    }
+
+    // Thêm dữ liệu sách
+    async addProduct(req, res) {
+
+        const { error, value } = Validator.productValidator.validate(req.body)
+        const file = req.file
+        if (file) {
+            value.images = file.path
         }
-        if (filter == "rate") {
-          data.sort(function (a, b) {
-            if (sort == "asc") {
-              return a.rate - b.rate;
-            }
-            if (sort == "desc") {
-              return b.rate - a.rate;
-            }
-          });
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await ProductService.insert(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
         }
-        if (filter == "published_date") {
-          data.sort(function (a, b) {
-            let dateA = new Date(a.published_date);
-            let dateB = new Date(b.published_date);
-            if (sort == "asc") {
-              return dateA - dateB;
-            }
-            if (sort == "desc") {
-              return dateB - dateA;
-            }
-          });
+    }
+
+    // Sửa dữ liệu sách theo id
+    async updateProduct(req, res) {
+
+        const id = req.params.id
+        const { error, value } = Validator.productUpdateValidator.validate(req.body)
+        const file = req.file
+        if (file) {
+            value.images = file.path
         }
-        if (filter == "title") {
-          data.sort(function (a, b) {
-            if (sort == "asc") {
-              return a.title - b.title;
-            }
-            if (sort == "desc") {
-              return b.title - a.title;
-            }
-          });
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await ProductService.update({ _id: id }, value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
         }
-        if (filter == "author") {
-          data.sort(function (a, b) {
-            if (sort == "asc") {
-              return a.author - b.author;
-            }
-            if (sort == "desc") {
-              return b.author - a.author;
-            }
-          });
-        }
-        if (filter == "status") {
-          data.sort(function (a, b) {
-            if (sort == "asc") {
-              return a.status - b.status;
-            }
-            if (sort == "desc") {
-              return b.status - a.status;
-            }
-          });
-        }
-        if (filter == "discount") {
-          data.sort(function (a, b) {
-            let discountA = a.old_price / a.price;
-            let discountB = b.old_price / b.price;
-            if (sort == "asc") {
-              return discountA - discountB;
-            }
-            if (sort == "desc") {
-              return discountB - discountA;
-            }
-          });
-        }
-      }
-
-      //Lấy num sản phẩm thôi
-      if (num > 0) {
-        data.splice(num);
-      }
-
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Found product successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when get data" + err;
-      resObj.data = "";
-      res.json(resObj);
     }
-  }
 
-  // Đếm số lượng sản phẩm theo category
-  async getCountProduct(req, res) {
-    try {
-      var id = req.query.category;
-      let data
-      if (id == '') {
-        data = await Product.count()
-      } else {
-        data = await Product.count({ categoryId: id })
-      }
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Count product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
+    // Xóa dữ liệu sách theo id
+    async deleteProduct(req, res) {
+
+        const id = req.params.id
+
+        const response = await ProductService.delete(id)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message
+        ))
     }
-  }
-
-  // Lấy 6 sản phẩm được bán chạy nhất
-  async getProductBestSellerLimit(req, res) {
-    try {
-      const data = await Product.find()
-
-      const newData = data.sort((a, b) => b.sold - a.sold).splice(0, 6)
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = newData;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy dữ liệu sách theo id
-  async getProductById(req, res) {
-    try {
-      const data = await Product.findById(req.params.id)
-        .populate("categoryId")
-        .exec();
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Tìm 5 category co nhiều sản phẩm nhất
-  async getNumProductByCategory(req, res) {
-    try {
-      const data = await Product.aggregate([
-        {
-          $group: {
-            _id: "$categoryId",
-
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { count: -1 } },
-        { $limit: 5 },
-      ]);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-
-  // Tìm tổng số sản phẩm có rate bằng 5
-  async getNumProductByRate(req, res) {
-    try {
-      const data = await Product.aggregate([
-        {
-          $group: {
-            _id: "$rate",
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { _id: -1 } },
-      ]);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy dữ liệu sách theo tên
-  async getProductByName(req, res) {
-    try {
-      var title = req.params.title;
-      var num = parseInt(req.query.num) || 6;
-      const data = await Product.find({ title: new RegExp(title, "i") })
-        .populate("categoryId")
-        .limit(num)
-        .exec();
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy dữ liệu sách theo tác giả
-  async getProductByAuthor(req, res) {
-    try {
-      var author = req.params.author;
-      const data = await Product.find({
-        author: new RegExp(author, "i"),
-      }).populate("categoryId");
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy dữ liệu sách theo khoảng năm xuất bản
-  async getProductByYear(req, res) {
-    try {
-      var start = req.params.start;
-      var end = req.params.end;
-      const data = await Product.find({
-        published_date: { $gte: start, $lte: end },
-      }).populate("categoryId");
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy sách mới nhất
-  async getNewProduct(req, res) {
-    try {
-      var num = parseInt(req.params.num) || 8;
-      const data = await Product.find()
-        .populate("categoryId")
-        .sort({
-          published_date: -1,
-        })
-        .limit(num);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy sách rẻ nhất
-  async getLowestProduct(req, res) {
-    try {
-      var num = parseInt(req.params.num) || 8;
-      const data = await Product.find()
-        .sort({
-          price: 1,
-        })
-        .populate("categoryId")
-        .limit(num);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy sách giảm sốc
-  async getLowestProduct(req, res) {
-    try {
-      var num = parseInt(req.params.num) || 8;
-      const data = await Product.find()
-        .sort({
-          price: -1,
-        })
-        .populate("categoryId")
-        .limit(num);
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy sách bán chạy nhất
-  async getBestSellerProduct(req, res) {
-    try {
-      var num = parseInt(req.params.num) || 8;
-      const data = await Product.find()
-        .populate("categoryId")
-        .sort({
-          sold: -1,
-        })
-        .limit(num)
-        .exec(); // Thực thi
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy dữ liệu sách theo khoảng giá và sắp xếp theo giá
-  async getProductByPrice(req, res) {
-    try {
-      var start = req.params.start;
-      var end = req.params.end;
-      var sort = req.params.sort;
-      const data = await Product.find({
-        price: { $gte: start, $lte: end },
-      })
-        .sort({ price: sort })
-        .populate("categoryId");
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  //Tìm các sách có tên danh mục là "Sách giáo khoa"
-  async getProductByCategoryName(req, res) {
-    try {
-      const category = await Category.findOne({
-        name: "Lịch Sử Thế Giới",
-      }).populate("categoryId");
-
-      const data = await Product.find({
-        "category.name": category.name,
-      });
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Lấy sách theo danh mục
-  async getProductByCategory(req, res) {
-    try {
-      var limit = req.query.limit || 0;
-      var id = req.query.category;
-      const data = await Product.find({ categoryId: id })
-        .limit(limit)
-        .populate("categoryId")
-        .exec();
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Get product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found product";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error get data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Thêm dữ liệu sách
-  async addProduct(req, res) {
-    try {
-      const product = new Product({ ...req.body })
-      const file = req.file
-
-
-      if (file) {
-        product.images = file.path
-      }
-      if (product) {
-        resObj.status = "OK";
-        resObj.message = "Add product successfully";
-        resObj.data = product;
-        product.save()
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Add product failed";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error add data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Sửa dữ liệu sách theo id
-  async updateProduct(req, res) {
-    try {
-      const id = req.params.id
-      const filter = { _id: id }
-      const updateProduct = { ...req.body }
-      const file = req.file
-      if (file) {
-        updateProduct.images = file.path
-      }
-      const result = await Product.findByIdAndUpdate(filter, updateProduct).exec()
-      if (result) {
-        resObj.status = "OK";
-        resObj.message = "Update product successfully";
-        resObj.data = updateProduct;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Update product failed";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error update data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
-
-  // Xóa dữ liệu sách theo id
-  async deleteProduct(req, res) {
-    try {
-      const data = await Product.deleteOne({ _id: req.params.id });
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Delete product successfully";
-        resObj.data = data;
-        return res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Delete product failed";
-        resObj.data = {};
-        return res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = `Error delete data. Error: ${err}`;
-      resObj.data = {};
-      return res.json(resObj);
-    }
-  }
 }
 
 module.exports = new ProductControllers();

@@ -1,13 +1,14 @@
 
 class EvaluateDTO {
 
-    constructor(_id, rate, comment, createdAt, product, user) {
+    constructor(_id, rate, comment, createdAt, product, likes, user) {
 
         this._id = _id
         this.rate = rate
         this.comment = comment
         this.createdAt = createdAt
         this.product = product
+        this.likes = likes
         this.user = user
     }
 
@@ -18,6 +19,7 @@ class EvaluateDTO {
             comment,
             createdAt,
             product,
+            likes,
             user
         } = evaluate
 
@@ -30,21 +32,21 @@ class EvaluateDTO {
             createdAt = `${timeString} ${dateString}`;
         }
 
-        if (user) {
+        if (Object.keys(user).length > 0) {
             user = {
                 images: user.images,
                 fullName: user.fullName
             }
         }
 
-        if (product) {
+        if (Object.keys(product).length > 0) {
             product = {
                 images: product.images,
                 title: product.title
             }
         }
 
-        return new EvaluateDTO(_id, rate, comment, createdAt, product, user)
+        return new EvaluateDTO(_id, rate, comment, createdAt, product, likes, user)
     }
 
 }

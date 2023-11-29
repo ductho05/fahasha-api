@@ -1,51 +1,31 @@
-const Field = require("../models/Field");
-const responeObject = require("../models/responeObject");
-
-const resObj = new responeObject("", "", {});
+const Response = require("../response/Response")
+const FieldService = require("../services/FieldService")
 
 class FieldControllers {
-  // Lấy tất cả category
-  async getAllField(req, res) {
-    try {
-      const data = await Field.find();
-      if (data) {
-        resObj.status = "OK";
-        resObj.message = "Found field successfully";
-        resObj.data = data;
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found data";
-        resObj.data = "";
-        res.json(resObj);
-      }
-    } catch (err) {
-      resObj.status = "Failed";
-      resObj.message = "Error when get data";
-      resObj.data = "";
-      res.json(resObj);
+
+    async getAllField(req, res) {
+
+        const response = await FieldService.getAll()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  // Thêm mới 1 đơn hàng
-  async insertField(req, res) {
-    try {
-      const field = new Field({ ...req.body });
-      resObj.status = "OK";
-      resObj.message = "Insert field successfully";
-      resObj.data = field;
+    async insertField(req, res) {
 
-      field.save();
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+        const data = req.body
 
-      res.status(500);
-      res.json(resObj);
+        const response = await FieldService.insert(data)
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 }
 
-module.exports = new FieldControllers();
+module.exports = new FieldControllers()

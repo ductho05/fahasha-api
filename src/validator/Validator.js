@@ -82,6 +82,86 @@ class Validator {
         url: Joi.string().pattern(new RegExp(/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}/)).required(),
         user: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/))
     })
+
+    orderValidator = Joi.object({
+        name: Joi.string().trim().min(3).max(255).required(),
+        address: Joi.string().trim().min(3).max(255).required(),
+        email: Joi.string().email().max(225).required(),
+        city: Joi.string().trim().min(5).required(),
+        country: Joi.string().trim().min(5).required(),
+        districs: Joi.string().trim().min(5).required(),
+        wards: Joi.string().trim().min(1).required(),
+        quantity: Joi.number().min(1).required(),
+        price: Joi.number().min(1).required(),
+        payment_method: Joi.string().trim().min(1).required(),
+        shipping_method: Joi.string().trim().min(1).required(),
+        deliveryDate: Joi.string().trim().min(1).required(),
+        shippingCost: Joi.number().min(1).required(),
+        user: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)).required(),
+        phone: Joi.string().pattern(
+            new RegExp(/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/)
+        )
+    })
+
+    orderUpdateValidator = Joi.object({
+
+        _id: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)),
+        name: Joi.string().trim().min(3).max(255),
+        address: Joi.string().trim().min(3).max(255),
+        email: Joi.string().email().max(225),
+        city: Joi.string().trim().min(5),
+        country: Joi.string().trim().min(5),
+        districs: Joi.string().trim().min(5),
+        wards: Joi.string().trim().min(1),
+        quantity: Joi.number().min(1),
+        price: Joi.number().min(1),
+        payment_method: Joi.string().trim().min(1),
+        shipping_method: Joi.string().trim().min(1),
+        deliveryDate: Joi.string().trim().min(1),
+        status: Joi.string().trim().min(1),
+        shippingCost: Joi.number().min(1),
+        user: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)),
+        phone: Joi.string().pattern(
+            new RegExp(/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/)
+        )
+    })
+
+    orderItemValidator = Joi.object({
+        quantity: Joi.number().min(1).required(),
+        price: Joi.number().min(1000).required(),
+        order: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)).required(),
+        product: Joi.string().pattern(new RegExp(/^[a-fA-F0-9]{24}$/)).required()
+    })
+
+    orderItemUpdateValidator = Joi.object({
+        status: Joi.string().valid("DADANHGIA").required()
+    })
+
+    productValidator = Joi.object({
+
+        title: Joi.string().trim().min(3).max(255).required(),
+        author: Joi.string().trim().min(3).max(255).required(),
+        published_date: Joi.string().pattern(new RegExp(/([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/)).required(),
+        price: Joi.number().min(1000).required(),
+        old_price: Joi.number().min(1000).required(),
+        desciption: Joi.string().trim().min(5).required(),
+        quantity: Joi.number().min(1).required(),
+        categoryId: Joi.string().trim().min(1).required()
+
+    })
+
+    productUpdateValidator = Joi.object({
+
+        title: Joi.string().trim().min(3).max(255),
+        author: Joi.string().trim().min(3).max(255),
+        published_date: Joi.string().pattern(new RegExp(/([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/)),
+        price: Joi.number().min(1000),
+        old_price: Joi.number().min(1000),
+        desciption: Joi.string().trim().min(5),
+        quantity: Joi.number().min(1),
+        categoryId: Joi.string().trim().min(1)
+
+    })
 }
 
 module.exports = new Validator

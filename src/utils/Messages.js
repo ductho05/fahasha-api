@@ -41,7 +41,21 @@ class Messages {
 
     GET_CATEGORY_SUCCESS = "Get category successfully"
 
+    CATEGORY_NOT_FOUND = "Category not found"
+
     NOT_FOUND_DATA = "Not found data"
+
+    UPDATE_DATA_SUCCESS = "Update data successfully"
+
+    UPDATE_DATA_ERROR = "Update data error"
+
+    INSERT_DATA_SUCCESS = "Insert data successfully"
+
+    INSERT_DATA_ERROR = "Insert data error"
+
+    DELETE_DATA_SUCCESS = "Delete data successfully"
+
+    DELETE_DATA_ERROR = "Delete data error"
 
     CATEGORY_EXISTS = "Category is exists"
 
@@ -62,6 +76,16 @@ class Messages {
     PUSH_SUBSCRIPTION_SUCCESS = "Push subscription success"
 
     SEND_NOTICE_SUCCESS = "Send notification successfully"
+
+    UPLOAD_FILE_SUCCESS = "Upload file successfully"
+
+    FILE_EMPTY = "File is empty"
+
+    GET_FLASHSALE_SUCCESS = "Get flash sale successfully"
+
+    TIME_IN_PAST = "Cannot set time in the past"
+
+    PRODUCT_IS_EXISTING = "Product is already"
 
 }
 

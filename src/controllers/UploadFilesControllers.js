@@ -1,28 +1,27 @@
-const responeObject = require("../models/responeObject")
-const resObj = new responeObject("", "", {})
-const fs = require("fs")
+const Status = require("../utils/Status")
+const Response = require("../response/Response")
+const Messages = require("../utils/Messages")
+const UploadFileService = require("../services/UploadFileService")
 
 class UploadFilesController {
 
     async uploadImages(req, res) {
-        try {
-            const file = req.file
-            if (file.length < 0) {
-                resObj.status = "Failed"
-                resObj.message = "Please selects file uploads"
-                resObj.data = []
-                res.json(resObj)
-            }
-           
-            resObj.status = "OK"
-            resObj.message = "Upload file successfully"
-            resObj.data = file.path
-            res.json(resObj)
-        } catch (error) {
-            resObj.status = "Failed"
-            resObj.message = `Can not uploads file. Error: ${error}`
-            resObj.data = {}
-            res.json(resObj)
+        const file = req.file
+        if (!file) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                Messages.FILE_EMPTY
+            ))
+        } else {
+
+            const response = await UploadFileService.upload(file)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
         }
     }
 }

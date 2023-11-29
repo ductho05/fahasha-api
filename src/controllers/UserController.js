@@ -21,8 +21,6 @@ class UserController {
 
             const response = await UserService.sendEmail(email, subject, html, otp)
 
-            console.log(response)
-
             res.status(response.statusCode).json(new Response(
                 response.status,
                 response.message,

@@ -1,226 +1,143 @@
-const OrderItem = require("../models/OrderItem");
-const responeObject = require("../models/responeObject");
-const resObj = new responeObject("", "", {});
-const Product = require("../models/Product");
+const Response = require("../response/Response");
+const OrderItemService = require("../services/OrderItemService");
+const Status = require("../utils/Status");
+const Validator = require("../validator/Validator")
 
 class OrderItemController {
-  async getAllOrderItem(req, res) {
-    try {
-      const orderItemList = await OrderItem.find()
-        .populate("order")
-        .populate("product")
-        .exec();
 
-      (resObj.status = "OK"), (resObj.message = "Found order successfully !");
-      resObj.data = orderItemList;
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+    async getAllOrderItem(req, res) {
+
+        const response = await OrderItemService.getAll()
+
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
 
-  async getAllOrderItemByOrder(req, res) {
-    try {
-      const id = req.query.id
-      const orderItemList = await OrderItem.find({ order: id })
-        .populate("order")
-        .populate({
-          path: "product",
-          populate: {
-            path: "categoryId",
-            model: "Category"
-          }
-        })
-        .exec()
+    async getAllOrderItemByOrder(req, res) {
 
-      resObj.status = "OK",
-        resObj.message = "Found order successfully !"
-      resObj.data = orderItemList
-      res.status(200)
-      res.json(resObj)
-    } catch (error) {
-      resObj.status = "Failed"
-      resObj.message = error.message
-      resObj.data = ""
-      res.status(500)
-      res.json(resObj)
+        const { error, value } = Validator.idValidator.validate(req.query.id)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderItemService.getByOrder(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
     }
-  }
 
-  async getAllOrderItemByOrderStatus(req, res) {
-    try {
-      const status = req.query.status
-      const status_order = req.query.status_order
-      const user = req.query.user
+    async getAllOrderItemByOrderStatus(req, res) {
 
-      const orderItemList = await OrderItem.find({ status: status })
-        .populate("order")
-        .populate({
-          path: "product",
-          populate: {
-            path: "categoryId",
-            model: "Category"
-          }
-        })
-        .exec()
+        const status = req.query.status
+        const status_order = req.query.status_order
+        const user = req.query.user
 
-      const newData = orderItemList.filter((orderItem) => orderItem?.order?.status == status_order && orderItem?.order?.user == user)
+        const response = await OrderItemService.getByOrderStatus(status, status_order, user)
 
-      resObj.status = "OK"
-      resObj.message = "Found order successfully !"
-      resObj.data = newData
-      res.status(200)
-      res.json(resObj)
-    } catch (error) {
-      resObj.status = "Failed"
-      resObj.message = error.message
-      resObj.data = ""
-      res.status(500)
-      res.json(resObj)
+        res.status(response.statusCode).json(new Response(
+            response.status,
+            response.message,
+            response.data
+        ))
     }
-  }
 
-  async getOrderItemById(req, res) {
-    try {
-      var id = req.params.id
-      const orderItem = await OrderItem.findOne({ '_id': id })
-        .populate("order")
-        .populate("product")
-        .exec()
-      if (orderItem) {
-        resObj.status = "OK"
-        resObj.message = "Found order successfully"
-        resObj.data = orderItem
-      }
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-      res.status(500);
-      res.json(resObj);
+    async getOrderItemById(req, res) {
+
+        const { error, value } = Validator.idValidator.validate(req.params.id)
+
+        if (error) {
+
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderItemService.getById(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message,
+                response.data
+            ))
+        }
     }
-  }
 
-  async getOrderItemById(req, res) {
-    try {
-      var id = req.params.id;
-      const orderItem = await OrderItem.findOne({ _id: id })
-        .populate("order")
-        .populate("product")
-        .exec();
-      if (orderItem) {
-        resObj.status = "OK";
-        resObj.message = "Found order successfully";
-        resObj.data = orderItem;
+    async insertOrderItem(req, res) {
 
-        res.status(200);
-        res.json(resObj);
-      } else {
-        resObj.status = "OK";
-        resObj.message = "Not found order item";
-        resObj.data = "";
+        const { error, value } = Validator.orderItemValidator.validate(req.body)
 
-        res.status(404);
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+        if (error) {
 
-      res.status(500);
-      res.json(resObj);
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderItemService.insert(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
+        }
     }
-  }
 
-  async insertOrderItem(req, res) {
-    try {
-      const orderItem = new OrderItem({ ...req.body });
-      if (orderItem.quantity == "" || orderItem.price == "") {
-        resObj.status = "Failed";
-        resObj.message = "Records is null";
-        resObj.data = "";
+    async removeOrderItem(req, res) {
+        const { error, value } = Validator.idValidator.validate(req.params.id)
 
-        res.json(resObj);
-      } else {
-        resObj.status = "OK";
-        resObj.message = "Insert orderItem item successfully";
-        resObj.data = orderItem;
+        if (error) {
 
-        orderItem.save();
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
 
-      res.status(500);
-      res.json(resObj);
+            const response = await OrderItemService.delete(value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
+        }
     }
-  }
 
-  async removeOrderItem(req, res) {
-    try {
-      const id = req.params.id;
-      const orderItem = await OrderItem.findByIdAndRemove({ _id: id }).exec();
+    async updateOrderItem(req, res) {
 
-      if (orderItem) {
-        resObj.status = "OK";
-        resObj.message = "Remove orderItem successfully";
-        resObj.data = `orderItem id: ${id}`;
-        res.status(200);
-        res.json(resObj);
-      } else {
-        resObj.status = "Failed";
-        resObj.message = "Not found orderItem";
-        resObj.data = "";
+        const id = req.params.id
+        const { error, value } = Validator.orderItemUpdateValidator.validate(req.body)
 
-        res.status(404);
-        res.json(resObj);
-      }
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
+        if (error) {
 
-      res.status(500);
-      res.json(resObj);
+            res.status(400).json(new Response(
+                Status.ERROR,
+                error.message
+            ))
+        } else {
+
+            const response = await OrderItemService.update({ _id: id }, value)
+
+            res.status(response.statusCode).json(new Response(
+                response.status,
+                response.message
+            ))
+        }
     }
-  }
-
-  async updateOrderItem(req, res) {
-    try {
-      const id = req.params.id;
-      const newOrderItem = { ...req.body };
-      const filter = { _id: id };
-      const update = newOrderItem;
-      const options = { new: true };
-      await OrderItem.findByIdAndUpdate(filter, update, options).exec();
-
-      resObj.status = "OK";
-      resObj.message = "Update successfully";
-      resObj.data = newOrderItem;
-
-      res.status(200);
-      res.json(resObj);
-    } catch (error) {
-      resObj.status = "Failed";
-      resObj.message = error.message;
-      resObj.data = "";
-
-      res.status(500);
-      res.json(resObj);
-    }
-  }
 }
 
 module.exports = new OrderItemController();
