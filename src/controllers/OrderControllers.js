@@ -1,6 +1,6 @@
 const Order = require("../models/Order");
 const responeObject = require("../models/responeObject");
-
+const moment = require('moment-timezone');
 var resObj = new responeObject("", "", {});
 class OrderController {
 
@@ -294,7 +294,14 @@ class OrderController {
   // Thêm mới 1 đơn hàng
   async insertOrder(req, res) {
     try {
+         // Đặt múi giờ cho Việt Nam
+      const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+      // Lấy thời gian hiện tại ở Việt Nam
+      const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+      const date =  currentTimeInVietnam.format('YYYY-MM-DD HH:mm:ss');
       const order = new Order({ ...req.body });
+      order.date = date;
+      await order.save();
       if (
         order.address.trim() == "" ||
         order.city.trim() == "" ||

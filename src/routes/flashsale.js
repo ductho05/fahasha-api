@@ -12,7 +12,7 @@ router.get("/:id", FlashSaleController.getFlashById)
 const schedule = require('node-schedule')
 const rule = new schedule.RecurrenceRule()
 rule.hour = 23
-rule.minute = 59
+rule.minute = 58
 rule.second = 0
 schedule.scheduleJob(rule, () => {
     FlashSaleController.addLoopSale()

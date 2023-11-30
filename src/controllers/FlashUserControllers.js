@@ -6,7 +6,16 @@ const { format } = require('date-fns-tz');
 const resObj = new responeObject("", "", {});
 const moment = require('moment-timezone');
 
-// Đặt múi giờ cho Việt Nam
+
+
+class FlashUserControllers {
+  // Lấy dữ liệu sách theo id
+  async getFlashById(req, res) {
+
+
+    try {
+
+      // Đặt múi giờ cho Việt Nam
 const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
 
 // Lấy thời gian hiện tại ở Việt Nam
@@ -14,11 +23,6 @@ const currentTimeInVietnam = moment().tz(vietnamTimeZone);
 
 // Lấy số giờ hiện tại
 const currentHourInVietnam = currentTimeInVietnam.get('hours');
-
-class FlashUserControllers {
-  // Lấy dữ liệu sách theo id
-  async getFlashById(req, res) {
-    try {
       const data = await FlashUser.findById(req.params.id)
       .populate({
         path: 'Flash',
@@ -48,6 +52,15 @@ class FlashUserControllers {
   }
   // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
   async getFlash(req, res) {
+
+    // Đặt múi giờ cho Việt Nam
+const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+
+// Lấy thời gian hiện tại ở Việt Nam
+const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+
+// Lấy số giờ hiện tại
+const currentHourInVietnam = currentTimeInVietnam.get('hours');
 
     // Tên danh mục
     var flashId = req.query.flashId;
@@ -261,6 +274,15 @@ class FlashUserControllers {
   // Thêm dữ liệu sách
   async addFlash(req, res) {
     try {
+
+      // Đặt múi giờ cho Việt Nam
+const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+
+// Lấy thời gian hiện tại ở Việt Nam
+const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+
+// Lấy số giờ hiện tại
+const currentHourInVietnam = currentTimeInVietnam.get('hours');
       const data = await FlashUser.create(req.body);
       const currentDate = new Date();
       let toDay = format(currentDate, 'yyyy-MM-dd', { timeZone: 'Asia/Ho_Chi_Minh' });

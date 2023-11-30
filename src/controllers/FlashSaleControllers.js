@@ -6,21 +6,14 @@ const responeObject = require("../models/responeObject");
 const resObj = new responeObject("", "", {});
 const moment = require('moment-timezone');
 
-// Đặt múi giờ cho Việt Nam
-const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
-
-// Lấy thời gian hiện tại ở Việt Nam
-const currentTimeInVietnam = moment().tz(vietnamTimeZone);
-
-// Lấy số giờ hiện tại
-const currentHourInVietnam = currentTimeInVietnam.get('hours');
 
 class FlashSaleControllers {
   // Lấy dữ liệu sách theo id
+
+  
   
   async getFlashById(req, res) {
-    try {
-     
+    try {     
       const data = await FlashSale.findById(req.params.id)
       .populate({
         path: 'product',
@@ -51,9 +44,14 @@ class FlashSaleControllers {
   // Lấy tất cả dữ liệu sách + phân trang + sắp theo giá
   async getProduct(req, res) {
 
-   
+   // Đặt múi giờ cho Việt Nam
+const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
 
-    console.log("currentHourInVietnam1: ", currentHourInVietnam);
+// Lấy thời gian hiện tại ở Việt Nam
+const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+
+// Lấy số giờ hiện tại
+const currentHourInVietnam = currentTimeInVietnam.get('hours');
 
     // Tên danh mục
     var categoryId = req.query.categoryId;
@@ -94,6 +92,7 @@ class FlashSaleControllers {
       //const utcOffset = 7 * 60; // 7 giờ * 60 phút/giờ
       //currentDate.setMinutes(currentDate.getMinutes() + utcOffset);
 
+      console.log("currentHourInVietnam: ", currentHourInVietnam);
 
       let current_point_sale = Math.floor(currentHourInVietnam/3);      
       //let toDay = currentDate.toISOString().slice(0, 10);
@@ -280,6 +279,14 @@ class FlashSaleControllers {
   // Thêm dữ liệu sách
   async addProduct(req, res) {
     try {
+            // Đặt múi giờ cho Việt Nam
+const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+
+// Lấy thời gian hiện tại ở Việt Nam
+const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+
+// Lấy số giờ hiện tại
+const currentHourInVietnam = currentTimeInVietnam.get('hours');
       const currentDate = new Date();
       const inputDate = new Date(req.body.date_sale);
 
@@ -403,6 +410,15 @@ data.hide_price = formattedNumberString2;
   // Kiểm tra và cập nhật lại giá của sản phẩm trong khung giờ hiện tại
   async checkAndUpdatePrice(req, res) {
       try {
+
+              // Đặt múi giờ cho Việt Nam
+const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+
+// Lấy thời gian hiện tại ở Việt Nam
+const currentTimeInVietnam = moment().tz(vietnamTimeZone);
+
+// Lấy số giờ hiện tại
+const currentHourInVietnam = currentTimeInVietnam.get('hours');
         // tìm các flash sale có ngày và khung giờ hiện tại
         const currentDate = new Date();
         const yesterday = subDays(currentDate, 1);
@@ -548,18 +564,18 @@ data.hide_price = formattedNumberString2;
   async addLoopSale(req, res) {  
     try {
       const currentDate = new Date();
-        //const inputDate = new Date(req.body.date_sale);
-  
-        const currentHour = currentDate.getHours();      
+        //const inputDate = new Date(req.body.date_sale);   
        // const inputTime = req.body.point_sale;
        let toDay = format(currentDate, 'yyyy-MM-dd', { timeZone: 'Asia/Ho_Chi_Minh' });
         //let toDay = currentDate.toISOString().slice(0, 10);
         //let inputDay = inputDate.toISOString().slice(0, 10);
       // Tìm tất cả các Flash Sale có is_loop = true và date_sale = hôm nay
+      console.log("toDay: ", toDay);
       const loopSales = await FlashSale.find({ is_loop: true, date_sale: toDay });      
       // Xóa các Flash Sale đã hết hạn
       //console.log("chua xoa", loopSales);
       for (const sale of loopSales) {
+        console.log("sale: ", sale);
         // thêm vào ngày hôm sau       
         sale.is_loop = false;
         await sale.save();
